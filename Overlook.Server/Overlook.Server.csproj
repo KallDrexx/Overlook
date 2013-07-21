@@ -43,9 +43,17 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Storage\IStorageEngine.cs" />
+    <Compile Include="Storage\LuceneStorageEngine.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Overlook.Commo\Overlook.Common.csproj">
+      <Project>{dda24de9-b5a6-4dbe-9811-a1ca5173558e}</Project>
+      <Name>Overlook.Common</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
