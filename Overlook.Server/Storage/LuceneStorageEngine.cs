@@ -1,24 +1,14 @@
 ﻿using System;
-using Overlook.Common.Data;
-using Overlook.Common.Search;
+using Overlook.Server.Operations;
 
 namespace Overlook.Server.Storage
 {
-    public class LuceneStorageEngine : IStorageEngine
+    public class LuceneStorageEngine : StorageEngineBase
     {
-        public void Initialize()
+        protected override Exception ProcessOperation(IOperation operation)
         {
-            throw new NotImplementedException();
-        }
-
-        public void StoreSnapshot(Snapshot snapshot)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Snapshot[] Search(DateRangeSearch search)
-        {
-            throw new NotImplementedException();
+            // TODO: Add logic
+            return null;
         }
     }
 }

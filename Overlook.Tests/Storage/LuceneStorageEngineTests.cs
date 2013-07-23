@@ -10,7 +10,6 @@ namespace Overlook.Tests.Storage
         public void Setup()
         {
             _storageEngine = new LuceneStorageEngine();
-            _storageEngine.Initialize();
         }
     }
 }

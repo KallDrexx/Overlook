@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using NUnit.Framework;
 using Overlook.Common.Data;
 using Overlook.Common.Data.Metrics;
 using Overlook.Common.Search;
+using Overlook.Server.Operations;
 using Overlook.Server.Storage;
 
 namespace Overlook.Tests.Storage
@@ -11,10 +13,10 @@ namespace Overlook.Tests.Storage
     [TestFixture(Ignore = true)]
     public class StorageEngineBaseTests
     {
-        protected IStorageEngine _storageEngine;
+        protected StorageEngineBase _storageEngine;
 
         [Test]
-        public void Can_Save_And_Search_Snapshots()
+        public void Can_Save_Snapshots()
         {
             var snapshot = new Snapshot
             {
@@ -26,51 +28,29 @@ namespace Overlook.Tests.Storage
                 }
             };
 
-            _storageEngine.StoreSnapshot(snapshot);
-            var results = _storageEngine.Search(new DateRangeSearch
+            const int maxSecondsToWait = 15;
+            bool? successRan = null;
+            IOperation resultingOperation = null;
+            OperationSuccessDelegate success = operation => { successRan = true; resultingOperation = operation; };
+            OperationFailureDelegate failure = (operation, ex) => { successRan = false; resultingOperation = operation; };
+
+            _storageEngine.StoreSnapshot(snapshot, success, failure);
+
+            var startingTime = DateTime.Now;
+            while ((DateTime.Now - startingTime).TotalSeconds < maxSecondsToWait)
             {
-                StartDate = snapshot.DateAndTime.AddMinutes(-1),
-                EndDate = snapshot.DateAndTime.AddMinutes(1)
-            });
+                if (successRan != null)
+                    break;
 
-            Assert.IsNotNull(results, "Null results returned");
-            Assert.AreEqual(1, results.Length, "Incorrect number of results returned");
+                Thread.Sleep(500);
+            }
 
-            var returnedSnapshot = results[0];
-            Assert.AreEqual(snapshot.DateAndTime,returnedSnapshot.DateAndTime, "Returned snapshot had an incorrect date and time");
-            Assert.AreEqual(snapshot.Metrics.Count(), returnedSnapshot.Metrics.Count(), "Returned snapshot had an incorrect number of metrics");
-
-            var expectedMetrics = snapshot.Metrics.ToArray();
-            var returnedMetrics = returnedSnapshot.Metrics.ToArray();
-
-            Assert.AreEqual(expectedMetrics[0].MetricTypeId, returnedMetrics[0].MetricTypeId, "First returned metric had an invalid id");
-            Assert.AreEqual(expectedMetrics[0].RawValue, returnedMetrics[0].RawValue, "First returned metric had an invalid raw value");
-            Assert.AreEqual(expectedMetrics[1].MetricTypeId, returnedMetrics[1].MetricTypeId, "Second returned metric had an invalid id");
-            Assert.AreEqual(expectedMetrics[1].RawValue, returnedMetrics[1].RawValue, "Second returned metric had an invalid raw value");
-        }
-
-        [Test]
-        public void Storage_Engine_Returns_Empty_Array_When_No_Results_Matched_Search()
-        {
-            var snapshot = new Snapshot
-            {
-                DateAndTime = DateTime.Now,
-                Metrics = new[]
-                {
-                    new TestMetric {RawValue = "1"},
-                    new TestMetric {RawValue = "2"}
-                }
-            };
-
-            _storageEngine.StoreSnapshot(snapshot);
-            var results = _storageEngine.Search(new DateRangeSearch
-            {
-                StartDate = snapshot.DateAndTime.AddMinutes(1),
-                EndDate = snapshot.DateAndTime.AddMinutes(2)
-            });
-
-            Assert.IsNotNull(results, "Null results returned");
-            Assert.IsEmpty(results, "Returned results array was not empty");
+            Assert.IsNotNull(successRan, "Callbacks were not called in the allotted time");
+            Assert.IsTrue(successRan.Value, "Failure callback was called instead of success callback");
+            Assert.IsNotNull(resultingOperation, "Supplied operation was null");
+            Assert.IsInstanceOf<StoreSnapshotOperation>(resultingOperation, "Supplied operation was not the correct type");
+            Assert.AreEqual(snapshot, ((StoreSnapshotOperation) resultingOperation).SnapshotToStore,
+                            "Operation's snapshot was not correct");
         }
     }
 }

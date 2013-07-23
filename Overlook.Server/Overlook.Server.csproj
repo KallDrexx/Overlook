@@ -41,9 +41,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Operations\IOperation.cs" />
+    <Compile Include="Operations\StoreSnapshotOperation.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Storage\IStorageEngine.cs" />
+    <Compile Include="Storage\StorageEngineBase.cs" />
     <Compile Include="Storage\LuceneStorageEngine.cs" />
   </ItemGroup>
   <ItemGroup>
