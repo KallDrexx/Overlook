@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 using Overlook.Common.Data;
-using Overlook.Common.Search;
+using Overlook.Common.Query;
 using Overlook.Server.Operations;
 
 namespace Overlook.Server.Storage
@@ -21,8 +21,14 @@ namespace Overlook.Server.Storage
 
             _operationHandlerTask = new Task(HandleOperations, _cancellationTokenSource.Token);
             _operationHandlerTask.Start();
-        }
+        } 
 
+        /// <summary>
+        /// Queues a snapshot to be stored
+        /// </summary>
+        /// <param name="snapshot"></param>
+        /// <param name="onSuccess">Delegate run when the snapshot is successfully saved</param>
+        /// <param name="onFailure">Delegate run when the snapshot fails to save</param>
         public void StoreSnapshot(Snapshot snapshot, OperationSuccessDelegate onSuccess = null, OperationFailureDelegate onFailure = null)
         {
             if (snapshot == null)
@@ -35,7 +41,31 @@ namespace Overlook.Server.Storage
             _operations.Enqueue(operation);
         }
 
-        public void HandleOperations()
+        /// <summary>
+        /// Queues a query for metrics
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="onSuccess">Delegate to run when the query has successfully completed</param>
+        /// <param name="onFailure">Delegate to run when the query fails</param>
+        /// <exception cref="ArgumentNullException">Thrown if a null query is passed in</exception>
+        /// <exception cref="ArgumentException">Thrown if the query type is not known</exception>
+        public void RunQuery(IQuery query, OperationSuccessDelegate onSuccess, OperationFailureDelegate onFailure)
+        {
+            if (query == null)
+                throw new ArgumentNullException("query");
+
+            IQueryOperation operation;
+            if (query.GetType() == typeof (DateRangeQuery))
+                operation = new DateRangeQueryOperation {RanQuery = query};
+            else
+                throw new ArgumentException("Query has an unknown type");
+
+            operation.FailureCallback += onFailure;
+            operation.SuccessCallback += onSuccess;
+            _operations.Enqueue(operation);
+        }
+
+        private void HandleOperations()
         {
             const int noOperationRecheckMillisecondDelay = 500;
 

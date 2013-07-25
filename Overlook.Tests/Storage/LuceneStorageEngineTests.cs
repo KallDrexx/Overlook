@@ -3,7 +3,7 @@ using Overlook.Server.Storage;
 
 namespace Overlook.Tests.Storage
 {
-    [TestFixture]
+    [TestFixture]       
     public class LuceneStorageEngineTests : StorageEngineBaseTests
     {
         [SetUp]

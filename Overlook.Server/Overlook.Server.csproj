@@ -41,7 +41,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Operations\DateRangeQueryOperation.cs" />
     <Compile Include="Operations\IOperation.cs" />
+    <Compile Include="Operations\IQueryOperation.cs" />
     <Compile Include="Operations\StoreSnapshotOperation.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
