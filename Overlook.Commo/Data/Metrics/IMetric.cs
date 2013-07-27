@@ -6,6 +6,6 @@ namespace Overlook.Common.Data.Metrics
     {
         Guid MetricTypeId { get; }
         string Name { get; }
-        string RawValue { get; set; }
+        decimal RawValue { get; set; }
     }
 }

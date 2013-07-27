@@ -6,7 +6,7 @@ namespace Overlook.Common.Data
 {
     public class Snapshot
     {
-        public DateTime DateAndTime { get; set; }
-        public IEnumerable<IMetric> Metrics { get; set; }
+        public DateTime Date { get; set; }
+        public IMetric[] Metrics { get; set; }
     }
 }
