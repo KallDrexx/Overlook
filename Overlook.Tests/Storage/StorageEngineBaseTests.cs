@@ -1,24 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using Lucene.Net.Store;
+using System.Text;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Overlook.Common.Data;
-using Overlook.Common.Data.Metrics;
 using Overlook.Server.Storage;
 
 namespace Overlook.Tests.Storage
 {
-    [TestFixture]       
-    public class LuceneStorageEngineTests
+    public class StorageEngineBaseTests
     {
-        private IStorageEngine _storageEngine;
-
-        [SetUp]
-        public void Setup()
-        {
-            var directory = new RAMDirectory();
-            _storageEngine = new LuceneStorageEngine(directory);
-        }
+        protected IStorageEngine _storageEngine;
 
         [Test]
         public void Can_Save_Snapshots_And_Get_By_Date_Range()
@@ -28,8 +21,8 @@ namespace Overlook.Tests.Storage
                 Date = DateTime.Now,
                 Metrics = new[]
                 {
-                    new TestMetric {RawValue = 123.4m},
-                    new TestMetric {RawValue = 55m}
+                    new Metric {Value = 123.4m},
+                    new Metric {Value = 55m}
                 }
             };
 
@@ -47,8 +40,8 @@ namespace Overlook.Tests.Storage
 
             var resultMetric1 = result1.Metrics[0];
             var resultMetric2 = result1.Metrics[1];
-            Assert.IsTrue(snapshot1.Metrics.Any(x => x.RawValue == resultMetric1.RawValue), "Original snapshot did not contain the a metric with the same raw value");
-            Assert.IsTrue(snapshot1.Metrics.Any(x => x.RawValue == resultMetric2.RawValue), "Original snapshot did not contain the a metric with the same raw value");
+            Assert.IsTrue(snapshot1.Metrics.Any(x => x.Value == resultMetric1.Value), "Original snapshot did not contain the a metric with the same raw value");
+            Assert.IsTrue(snapshot1.Metrics.Any(x => x.Value == resultMetric2.Value), "Original snapshot did not contain the a metric with the same raw value");
         }
     }
 }
