@@ -34,7 +34,14 @@ namespace Overlook.Server.Storage.Sqlite
 
         public IEnumerable<QueriedMetricResult> ExecuteQuery(Query query)
         {
-            throw new NotImplementedException();
+            if (query.Metrics == null)
+                yield break;
+
+            foreach (var metric in query.Metrics)
+            {
+                yield return
+                    DatabaseQueries.GetMetricValuesBetweenDates(_db, metric, query.StartDate, query.EndDate);
+            }
         }
     }
 }

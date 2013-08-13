@@ -50,7 +50,8 @@ namespace Overlook.Tests.Storage
             Assert.AreEqual(metric1, resultsArray[0].Metric, "Returned metric was not correct");
             Assert.IsNotNull(resultsArray[0].Values, "Returned metric values array was null");
             Assert.AreEqual(1, resultsArray[0].Values.Length, "Incorrect number of metric values returned");
-            Assert.AreEqual(metric1Value, resultsArray[0].Values[0], "Incorrect metric value");
+            Assert.AreEqual(snapshot1.Date, resultsArray[0].Values[0].Key, "Incorrect metric date");
+            Assert.AreEqual(metric1Value, resultsArray[0].Values[0].Value, "Incorrect metric value");
         }
     }
 }
