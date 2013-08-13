@@ -6,6 +6,6 @@ namespace Overlook.Common.Data
     public class Snapshot
     {
         public DateTime Date { get; set; }
-        public Metric[] Metrics { get; set; }
+        public KeyValuePair<Metric, decimal>[] MetricValues { get; set; }
     }
 }

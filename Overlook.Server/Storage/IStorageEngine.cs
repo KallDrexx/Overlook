@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using Overlook.Common.Data;
+using Overlook.Common.Queries;
 
 namespace Overlook.Server.Storage
 {
@@ -12,12 +14,6 @@ namespace Overlook.Server.Storage
         /// <exception cref="ArgumentNullException">Thrown when a null snapshot is provided</exception>
         void StoreSnapshot(Snapshot snapshot);
 
-        /// <summary>
-        /// Retrieves all snapshots between the specified time period
-        /// </summary>
-        /// <param name="startSearchDate"></param>
-        /// <param name="endSearchDate"></param>
-        /// <returns></returns>
-        Snapshot[] GetSnapshots(DateTime startSearchDate, DateTime endSearchDate);
+        IEnumerable<QueriedMetricResult> ExecuteQuery(Query query);
     }
 }

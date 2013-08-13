@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Operations Version="1.0" xmlns="http://schemas.microsoft.com/sqlserver/dac/Serialization/2012/02">
+  <Operation Name="Rename Refactor" Key="a4cd17d1-7581-40ba-9a5e-036c2a1a0cf0" ChangeDateTime="08/12/2013 03:03:56">
+    <Property Name="ElementName" Value="[dbo].[MetricData].[Device]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[MetricData]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="MetricDevice" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="4395834c-58cc-4828-a8ba-70b42a0ca0b5" ChangeDateTime="08/12/2013 03:04:00">
+    <Property Name="ElementName" Value="[dbo].[MetricData].[Category]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[MetricData]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="MetricCategory" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="266eb76b-c9a4-4936-9102-1cd9987c63c7" ChangeDateTime="08/12/2013 03:04:06">
+    <Property Name="ElementName" Value="[dbo].[MetricData].[Suffix]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[MetricData]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="MetricName" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="a1b66086-bfdf-41ac-9d51-eee7ee18c033" ChangeDateTime="08/12/2013 03:04:11">
+    <Property Name="ElementName" Value="[dbo].[MetricData].[MetricName]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[MetricData]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="SuffixLabel" />
+  </Operation>
+</Operations>

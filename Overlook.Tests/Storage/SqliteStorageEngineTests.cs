@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using Overlook.Server.Storage;
+using Overlook.Server.Storage.Sqlite;
 
 namespace Overlook.Tests.Storage
 {
@@ -9,7 +10,7 @@ namespace Overlook.Tests.Storage
         [SetUp]
         public void Setup()
         {
-            _storageEngine = new SqliteStorageEngine("test", true);
+            _storageEngine = new SqliteStorageEngine(":memory:", true);
         }
     }
 }
