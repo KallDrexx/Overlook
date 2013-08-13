@@ -56,7 +56,8 @@ namespace Overlook.Server.Storage.Sqlite
                     where MetricDevice = @device 
                     and MetricCategory = @category
                     and MetricName = @name
-                    and Date between @start and @end";
+                    and Date between @start and @end
+                    order by Date";
 
             if (connection == null)
                 throw new ArgumentNullException("connection");

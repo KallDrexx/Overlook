@@ -2,9 +2,24 @@
 {
     public class Metric
     {
+        /// <summary>
+        /// Name of the device the metric is for
+        /// </summary>
         public string Device { get; private set; }
+
+        /// <summary>
+        /// Category for the specific metric
+        /// </summary>
         public string Category { get; private set; }
+
+        /// <summary>
+        /// Name of the metric
+        /// </summary>
         public string Name { get; private set; }
+
+        /// <summary>
+        /// Suffix displayed with the metric data (for display purposes only)
+        /// </summary>
         public string SuffixLabel { get; private set; }
 
         public Metric(string device, string category, string name, string suffixLabel)
