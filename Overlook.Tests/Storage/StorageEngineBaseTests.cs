@@ -484,5 +484,197 @@ namespace Overlook.Tests.Storage
             Assert.AreEqual(expectedDate2, resultsArray[0].Values[1].Key, "Incorrect metric date for second result");
             Assert.AreEqual(metricValue3, resultsArray[0].Values[1].Value, "Incorrect metric value for second result");
         }
+
+        [Test]
+        public void Query_Results_Returned_As_Average_Per_Fifteen_Minutes()
+        {
+            const string device = "device";
+            const string category = "category";
+            const string name1 = "name1";
+            const string suffix = "suffix";
+            const decimal metricValue1 = 0m;
+            const decimal metricValue2 = 50m;
+            const decimal metricValue3 = 75m;
+            const decimal expectedAverage = (metricValue1 + metricValue2) / 2;
+
+            var metric1 = new Metric(device, category, name1, suffix);
+
+            var snapshot1 = new Snapshot
+            {
+                Date = new DateTime(2013, 1, 1, 1, 16, 0),
+                MetricValues = new[] { new KeyValuePair<Metric, decimal>(metric1, metricValue1) }
+            };
+
+            var snapshot2 = new Snapshot
+            {
+                Date = snapshot1.Date.AddMinutes(7),
+                MetricValues = new[] { new KeyValuePair<Metric, decimal>(metric1, metricValue2) }
+            };
+
+            var snapshot3 = new Snapshot
+            {
+                Date = snapshot1.Date.AddMinutes(25),
+                MetricValues = new[] { new KeyValuePair<Metric, decimal>(metric1, metricValue3) }
+            };
+
+            _storageEngine.StoreSnapshot(snapshot1);
+            _storageEngine.StoreSnapshot(snapshot2);
+            _storageEngine.StoreSnapshot(snapshot3);
+
+            var query = new Query
+            {
+                StartDate = snapshot1.Date.AddMinutes(-5),
+                EndDate = snapshot3.Date.AddMinutes(5),
+                Metrics = new[] { metric1 },
+                Resolution = QueryResolution.FifteenMinutes
+            };
+
+            var results = _storageEngine.ExecuteQuery(query);
+            var expectedDate1 = snapshot1.Date.AddMinutes(-snapshot1.Date.Minute + 15);
+            var expectedDate2 = snapshot3.Date.AddMinutes(-snapshot3.Date.Minute + 30);
+
+            Assert.IsNotNull(results, "Null results returned");
+
+            var resultsArray = results.ToArray();
+            Assert.AreEqual(1, resultsArray.Length, "Incorrect number of results were returned");
+
+            Assert.AreEqual(metric1, resultsArray[0].Metric, "Returned metric was not correct");
+            Assert.IsNotNull(resultsArray[0].Values, "Returned metric values array was null");
+            Assert.AreEqual(2, resultsArray[0].Values.Length, "Incorrect number of metric values returned");
+
+            Assert.AreEqual(expectedDate1, resultsArray[0].Values[0].Key, "Incorrect metric date for first result");
+            Assert.AreEqual(expectedAverage, resultsArray[0].Values[0].Value, "Incorrect metric value for first result");
+
+            Assert.AreEqual(expectedDate2, resultsArray[0].Values[1].Key, "Incorrect metric date for second result");
+            Assert.AreEqual(metricValue3, resultsArray[0].Values[1].Value, "Incorrect metric value for second result");
+        }
+
+        [Test]
+        public void Query_Results_Returned_As_Average_Per_Ten_Minutes()
+        {
+            const string device = "device";
+            const string category = "category";
+            const string name1 = "name1";
+            const string suffix = "suffix";
+            const decimal metricValue1 = 0m;
+            const decimal metricValue2 = 50m;
+            const decimal metricValue3 = 75m;
+            const decimal expectedAverage = (metricValue1 + metricValue2) / 2;
+
+            var metric1 = new Metric(device, category, name1, suffix);
+
+            var snapshot1 = new Snapshot
+            {
+                Date = new DateTime(2013, 1, 1, 1, 11, 0),
+                MetricValues = new[] { new KeyValuePair<Metric, decimal>(metric1, metricValue1) }
+            };
+
+            var snapshot2 = new Snapshot
+            {
+                Date = snapshot1.Date.AddMinutes(7),
+                MetricValues = new[] { new KeyValuePair<Metric, decimal>(metric1, metricValue2) }
+            };
+
+            var snapshot3 = new Snapshot
+            {
+                Date = snapshot1.Date.AddMinutes(10),
+                MetricValues = new[] { new KeyValuePair<Metric, decimal>(metric1, metricValue3) }
+            };
+
+            _storageEngine.StoreSnapshot(snapshot1);
+            _storageEngine.StoreSnapshot(snapshot2);
+            _storageEngine.StoreSnapshot(snapshot3);
+
+            var query = new Query
+            {
+                StartDate = snapshot1.Date.AddMinutes(-5),
+                EndDate = snapshot3.Date.AddMinutes(5),
+                Metrics = new[] { metric1 },
+                Resolution = QueryResolution.TenMinutes
+            };
+
+            var results = _storageEngine.ExecuteQuery(query);
+            var expectedDate1 = snapshot1.Date.AddMinutes(-snapshot1.Date.Minute + 10);
+            var expectedDate2 = snapshot3.Date.AddMinutes(-snapshot3.Date.Minute + 20);
+
+            Assert.IsNotNull(results, "Null results returned");
+
+            var resultsArray = results.ToArray();
+            Assert.AreEqual(1, resultsArray.Length, "Incorrect number of results were returned");
+
+            Assert.AreEqual(metric1, resultsArray[0].Metric, "Returned metric was not correct");
+            Assert.IsNotNull(resultsArray[0].Values, "Returned metric values array was null");
+            Assert.AreEqual(2, resultsArray[0].Values.Length, "Incorrect number of metric values returned");
+
+            Assert.AreEqual(expectedDate1, resultsArray[0].Values[0].Key, "Incorrect metric date for first result");
+            Assert.AreEqual(expectedAverage, resultsArray[0].Values[0].Value, "Incorrect metric value for first result");
+
+            Assert.AreEqual(expectedDate2, resultsArray[0].Values[1].Key, "Incorrect metric date for second result");
+            Assert.AreEqual(metricValue3, resultsArray[0].Values[1].Value, "Incorrect metric value for second result");
+        }
+
+        [Test]
+        public void Query_Results_Returned_As_Average_Per_Half_Hour()
+        {
+            const string device = "device";
+            const string category = "category";
+            const string name1 = "name1";
+            const string suffix = "suffix";
+            const decimal metricValue1 = 0m;
+            const decimal metricValue2 = 50m;
+            const decimal metricValue3 = 75m;
+            const decimal expectedAverage = (metricValue1 + metricValue2) / 2;
+
+            var metric1 = new Metric(device, category, name1, suffix);
+
+            var snapshot1 = new Snapshot
+            {
+                Date = new DateTime(2013, 1, 1, 1, 11, 0),
+                MetricValues = new[] { new KeyValuePair<Metric, decimal>(metric1, metricValue1) }
+            };
+
+            var snapshot2 = new Snapshot
+            {
+                Date = snapshot1.Date.AddMinutes(10),
+                MetricValues = new[] { new KeyValuePair<Metric, decimal>(metric1, metricValue2) }
+            };
+
+            var snapshot3 = new Snapshot
+            {
+                Date = snapshot1.Date.AddMinutes(20),
+                MetricValues = new[] { new KeyValuePair<Metric, decimal>(metric1, metricValue3) }
+            };
+
+            _storageEngine.StoreSnapshot(snapshot1);
+            _storageEngine.StoreSnapshot(snapshot2);
+            _storageEngine.StoreSnapshot(snapshot3);
+
+            var query = new Query
+            {
+                StartDate = snapshot1.Date.AddMinutes(-5),
+                EndDate = snapshot3.Date.AddMinutes(5),
+                Metrics = new[] { metric1 },
+                Resolution = QueryResolution.HalfHour
+            };
+
+            var results = _storageEngine.ExecuteQuery(query);
+            var expectedDate1 = snapshot1.Date.AddMinutes(-snapshot1.Date.Minute);
+            var expectedDate2 = snapshot3.Date.AddMinutes(-snapshot3.Date.Minute + 30);
+
+            Assert.IsNotNull(results, "Null results returned");
+
+            var resultsArray = results.ToArray();
+            Assert.AreEqual(1, resultsArray.Length, "Incorrect number of results were returned");
+
+            Assert.AreEqual(metric1, resultsArray[0].Metric, "Returned metric was not correct");
+            Assert.IsNotNull(resultsArray[0].Values, "Returned metric values array was null");
+            Assert.AreEqual(2, resultsArray[0].Values.Length, "Incorrect number of metric values returned");
+
+            Assert.AreEqual(expectedDate1, resultsArray[0].Values[0].Key, "Incorrect metric date for first result");
+            Assert.AreEqual(expectedAverage, resultsArray[0].Values[0].Value, "Incorrect metric value for first result");
+
+            Assert.AreEqual(expectedDate2, resultsArray[0].Values[1].Key, "Incorrect metric date for second result");
+            Assert.AreEqual(metricValue3, resultsArray[0].Values[1].Value, "Incorrect metric value for second result");
+        }
     }
 }

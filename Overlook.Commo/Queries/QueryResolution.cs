@@ -10,6 +10,9 @@
         Hour,
         Day,
         Month,
-        Year
+        Year,
+        FifteenMinutes,
+        TenMinutes,
+        HalfHour
     }
 }

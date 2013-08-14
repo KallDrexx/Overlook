@@ -106,7 +106,10 @@ namespace Overlook.Server.Storage.Sqlite
                 {QueryResolution.Hour, "strftime('%Y-%m-%dT%H:00:00.000', Date)"},
                 {QueryResolution.Day, "strftime('%Y-%m-%dT00:00:00.000', Date)"},
                 {QueryResolution.Month,"strftime('%Y-%m-01T00:00:00.000', Date)" },
-                {QueryResolution.Year,"strftime('%Y-01-01T00:00:00.000', Date)" }
+                {QueryResolution.Year,"strftime('%Y-01-01T00:00:00.000', Date)" },
+                {QueryResolution.FifteenMinutes, "strftime('%Y-%m-%dT%H:', Date) || case when ((strftime('%M', Date)/15) * 15) = 0 then '00' else ((strftime('%M', Date)/15) * 15) end"},
+                {QueryResolution.TenMinutes, "strftime('%Y-%m-%dT%H:', Date) || case when ((strftime('%M', Date)/10) * 10) = 0 then '00' else ((strftime('%M', Date)/10) * 10) end"},
+                {QueryResolution.HalfHour, "strftime('%Y-%m-%dT%H:', Date) || case when ((strftime('%M', Date)/30) * 30) = 0 then '00' else ((strftime('%M', Date)/30) * 30) end"},
             };
 
             // Build the query
