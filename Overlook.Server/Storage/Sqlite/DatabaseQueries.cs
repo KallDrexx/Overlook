@@ -107,9 +107,9 @@ namespace Overlook.Server.Storage.Sqlite
                 {QueryResolution.Day, "strftime('%Y-%m-%dT00:00:00.000', Date)"},
                 {QueryResolution.Month,"strftime('%Y-%m-01T00:00:00.000', Date)" },
                 {QueryResolution.Year,"strftime('%Y-01-01T00:00:00.000', Date)" },
-                {QueryResolution.FifteenMinutes, "strftime('%Y-%m-%dT%H:', Date) || case when ((strftime('%M', Date)/15) * 15) = 0 then '00' else ((strftime('%M', Date)/15) * 15) end"},
-                {QueryResolution.TenMinutes, "strftime('%Y-%m-%dT%H:', Date) || case when ((strftime('%M', Date)/10) * 10) = 0 then '00' else ((strftime('%M', Date)/10) * 10) end"},
-                {QueryResolution.HalfHour, "strftime('%Y-%m-%dT%H:', Date) || case when ((strftime('%M', Date)/30) * 30) = 0 then '00' else ((strftime('%M', Date)/30) * 30) end"},
+                {QueryResolution.FifteenMinutes, "strftime('%Y-%m-%dT%H:', Date) || ((strftime('%M', Date)/15) * 15)"},
+                {QueryResolution.TenMinutes, "strftime('%Y-%m-%dT%H:', Date) || ((strftime('%M', Date)/10) * 10)"},
+                {QueryResolution.HalfHour, "strftime('%Y-%m-%dT%H:', Date) || ((strftime('%M', Date)/30) * 30)"},
             };
 
             // Build the query
@@ -144,7 +144,14 @@ namespace Overlook.Server.Storage.Sqlite
                     break;
 
                 default:
-                    var resolutionDate = reader.GetDateTime(reader.GetOrdinal("GroupedDate"));
+                    var rawDate = Convert.ToString(reader["GroupedDate"]);
+                    
+                    // Partial time resolutions will cause the raw date to have a minute value
+                    // of :0 instead of :00, which will cause parsing errors, so try and fix that
+                    if (rawDate.EndsWith(":0"))
+                        rawDate += "0";
+
+                    var resolutionDate = DateTime.Parse(rawDate);
                     var resolutionValue = reader.GetDecimal(reader.GetOrdinal("Value"));
                     values.Add(new KeyValuePair<DateTime, decimal>(resolutionDate, resolutionValue));
                     break;
