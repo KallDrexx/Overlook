@@ -54,22 +54,6 @@ namespace Overlook.Server.Storage.Sqlite
                                                                       DateTime startDate, DateTime endDate,
                                                                       QueryResolution resolution)
         {
-            const string fromClause = @"from MetricData ";
-            const string orderByClause = @"order by Date ";
-            const string whereClause = @"where MetricDevice = @device 
-                    and MetricCategory = @category
-                    and MetricName = @name
-                    and Date between @start and @end ";
-
-            // Different select clauses for the different resolutions
-            const string allSelectClause = @"select Date, Value ";
-            const string minuteSelectClause =
-                @"select strftime('%Y',Date) as 'year', strftime('%m', Date) as 'month', strftime('%d', Date) as 'day',
-                            strftime('%H', Date) as 'hour', strftime('%M', Date) as 'minute', avg(Value) as 'Value' ";
-
-            const string minuteGroupByClause =
-                @"group by strftime('%Y-%m-%dT%H:%M:00.000', Date) ";
-
             if (connection == null)
                 throw new ArgumentNullException("connection");
 
@@ -78,26 +62,9 @@ namespace Overlook.Server.Storage.Sqlite
 
             // Impossible to have values when the start date is after the end date, so don't even try
             if (endDate < startDate)
-                return new QueriedMetricResult {Metric = metric, Values = new KeyValuePair<DateTime, decimal>[0]};
+                return new QueriedMetricResult { Metric = metric, Values = new KeyValuePair<DateTime, decimal>[0] };
 
-            // Build the query
-            var query = string.Empty;
-            var groupBy = string.Empty;
-            switch (resolution)
-            {
-                case QueryResolution.All:
-                    query = allSelectClause;
-                    break;
-
-                case QueryResolution.Minute:
-                    query = minuteSelectClause;
-                    groupBy = minuteGroupByClause;
-                    break;
-            }
-
-            query = string.Format("{1}{0}{2}{0}{3}{0}{4}{0}{5}", Environment.NewLine, query, fromClause, whereClause,
-                                  groupBy, orderByClause);
-
+            var query = GenerateQueryAtResolution(resolution);
             var values = new List<KeyValuePair<DateTime, decimal>>();
             using (var command = new SQLiteCommand(query, connection))
             {
@@ -119,6 +86,50 @@ namespace Overlook.Server.Storage.Sqlite
             };
         }
 
+        private static string GenerateQueryAtResolution(QueryResolution resolution)
+        {
+            const string fromClause = @"from MetricData ";
+            const string orderByClause = @"order by Date ";
+            const string whereClause = @"where MetricDevice = @device 
+                    and MetricCategory = @category
+                    and MetricName = @name
+                    and Date between @start and @end ";
+
+            // Different select clauses for the different resolutions
+            const string allSelectClause = @"select Date, Value ";
+            const string resolutionSelectClause = @"select {0} as 'GroupedDate', avg(Value) as 'Value' ";
+            const string resolutionGroupByClause = @"group by {0} ";
+
+            var resolutionDateParts = new Dictionary<QueryResolution, string>
+            {
+                {QueryResolution.Minute, "strftime('%Y-%m-%dT%H:%M:00.000', Date)"},
+                {QueryResolution.Hour, "strftime('%Y-%m-%dT%H:00:00.000', Date)"},
+                {QueryResolution.Day, "strftime('%Y-%m-%dT00:00:00.000', Date)"},
+                {QueryResolution.Month,"strftime('%Y-%m-01T00:00:00.000', Date)" },
+                {QueryResolution.Year,"strftime('%Y-01-01T00:00:00.000', Date)" }
+            };
+
+            // Build the query
+            string query;
+            string groupBy;
+            switch (resolution)
+            {
+                case QueryResolution.All:
+                    query = allSelectClause;
+                    groupBy = string.Empty;
+                    break;
+
+                default:
+                    var datePart = resolutionDateParts[resolution];
+                    query = string.Format(resolutionSelectClause, datePart);
+                    groupBy = string.Format(resolutionGroupByClause, datePart);
+                    break;
+            }
+
+            return string.Format("{1}{0}{2}{0}{3}{0}{4}{0}{5}", 
+                Environment.NewLine, query, fromClause, whereClause, groupBy, orderByClause);
+        }
+
         private static void ReadQueryResult(QueryResolution resolution, SQLiteDataReader reader, List<KeyValuePair<DateTime, decimal>> values)
         {
             switch (resolution)
@@ -129,42 +140,8 @@ namespace Overlook.Server.Storage.Sqlite
                     values.Add(new KeyValuePair<DateTime, decimal>(date, value));
                     break;
 
-                case QueryResolution.Minute:
-                    var columnNames = Enumerable.Range(0, reader.FieldCount)
-                                                .Select(reader.GetName)
-                                                .ToArray();
-
-                    string rawYear;
-                    string rawMonth = string.Empty;
-                    string rawDay = string.Empty;
-                    string rawHour = string.Empty;
-                    string rawMinute = string.Empty;
-
-                    if (!columnNames.Any(x => x.Equals("year", StringComparison.OrdinalIgnoreCase)))
-                        throw new InvalidOperationException("No year column returned even though required");
-
-                    rawYear = reader.GetString(reader.GetOrdinal("year"));
-
-                    if (columnNames.Any(x => x.Equals("month", StringComparison.OrdinalIgnoreCase)))
-                        rawMonth = reader.GetString(reader.GetOrdinal("month"));
-
-                    if (columnNames.Any(x => x.Equals("day", StringComparison.OrdinalIgnoreCase)))
-                        rawDay = reader.GetString(reader.GetOrdinal("day"));
-
-                    if (columnNames.Any(x => x.Equals("hour", StringComparison.OrdinalIgnoreCase)))
-                        rawHour = reader.GetString(reader.GetOrdinal("hour"));
-
-                    if (columnNames.Any(x => x.Equals("minute", StringComparison.OrdinalIgnoreCase)))
-                        rawMinute = reader.GetString(reader.GetOrdinal("minute"));
-
-                    int year, month, day, hour, minute;
-                    int.TryParse(rawYear, out year);
-                    int.TryParse(rawMonth, out month);
-                    int.TryParse(rawDay, out day);
-                    int.TryParse(rawHour, out hour);
-                    int.TryParse(rawMinute, out minute);
-
-                    var resolutionDate = new DateTime(year, month, day, hour, minute, 0);
+                default:
+                    var resolutionDate = reader.GetDateTime(reader.GetOrdinal("GroupedDate"));
                     var resolutionValue = reader.GetDecimal(reader.GetOrdinal("Value"));
                     values.Add(new KeyValuePair<DateTime, decimal>(resolutionDate, resolutionValue));
                     break;
