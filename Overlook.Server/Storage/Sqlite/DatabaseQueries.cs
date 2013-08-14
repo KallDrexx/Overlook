@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
+using System.Linq;
 using Overlook.Common.Data;
+using Overlook.Common.Queries;
 
 namespace Overlook.Server.Storage.Sqlite
 {
@@ -49,15 +51,24 @@ namespace Overlook.Server.Storage.Sqlite
         }
 
         public static QueriedMetricResult GetMetricValuesBetweenDates(SQLiteConnection connection, Metric metric,
-                                                                      DateTime startDate, DateTime endDate)
+                                                                      DateTime startDate, DateTime endDate,
+                                                                      QueryResolution resolution)
         {
-            const string query =
-                @"select Date, Value from MetricData 
-                    where MetricDevice = @device 
+            const string fromClause = @"from MetricData ";
+            const string orderByClause = @"order by Date ";
+            const string whereClause = @"where MetricDevice = @device 
                     and MetricCategory = @category
                     and MetricName = @name
-                    and Date between @start and @end
-                    order by Date";
+                    and Date between @start and @end ";
+
+            // Different select clauses for the different resolutions
+            const string allSelectClause = @"select Date, Value ";
+            const string minuteSelectClause =
+                @"select strftime('%Y',Date) as 'year', strftime('%m', Date) as 'month', strftime('%d', Date) as 'day',
+                            strftime('%H', Date) as 'hour', strftime('%M', Date) as 'minute', avg(Value) as 'Value' ";
+
+            const string minuteGroupByClause =
+                @"group by strftime('%Y-%m-%dT%H:%M:00.000', Date) ";
 
             if (connection == null)
                 throw new ArgumentNullException("connection");
@@ -69,6 +80,24 @@ namespace Overlook.Server.Storage.Sqlite
             if (endDate < startDate)
                 return new QueriedMetricResult {Metric = metric, Values = new KeyValuePair<DateTime, decimal>[0]};
 
+            // Build the query
+            var query = string.Empty;
+            var groupBy = string.Empty;
+            switch (resolution)
+            {
+                case QueryResolution.All:
+                    query = allSelectClause;
+                    break;
+
+                case QueryResolution.Minute:
+                    query = minuteSelectClause;
+                    groupBy = minuteGroupByClause;
+                    break;
+            }
+
+            query = string.Format("{1}{0}{2}{0}{3}{0}{4}{0}{5}", Environment.NewLine, query, fromClause, whereClause,
+                                  groupBy, orderByClause);
+
             var values = new List<KeyValuePair<DateTime, decimal>>();
             using (var command = new SQLiteCommand(query, connection))
             {
@@ -77,16 +106,10 @@ namespace Overlook.Server.Storage.Sqlite
                 command.Parameters.AddWithValue("@name", metric.Name);
                 command.Parameters.AddWithValue("@start", startDate);
                 command.Parameters.AddWithValue("@end", endDate);
-                
+
                 using (var reader = command.ExecuteReader())
-                {
                     while (reader.Read())
-                    {
-                        var date = reader.GetDateTime(0);
-                        var value = reader.GetDecimal(1);
-                        values.Add(new KeyValuePair<DateTime, decimal>(date, value));
-                    }
-                }
+                        ReadQueryResult(resolution, reader, values);
             }
 
             return new QueriedMetricResult
@@ -94,6 +117,58 @@ namespace Overlook.Server.Storage.Sqlite
                 Metric = metric,
                 Values = values.ToArray()
             };
+        }
+
+        private static void ReadQueryResult(QueryResolution resolution, SQLiteDataReader reader, List<KeyValuePair<DateTime, decimal>> values)
+        {
+            switch (resolution)
+            {
+                case QueryResolution.All:
+                    var date = reader.GetDateTime(0);
+                    var value = reader.GetDecimal(1);
+                    values.Add(new KeyValuePair<DateTime, decimal>(date, value));
+                    break;
+
+                case QueryResolution.Minute:
+                    var columnNames = Enumerable.Range(0, reader.FieldCount)
+                                                .Select(reader.GetName)
+                                                .ToArray();
+
+                    string rawYear;
+                    string rawMonth = string.Empty;
+                    string rawDay = string.Empty;
+                    string rawHour = string.Empty;
+                    string rawMinute = string.Empty;
+
+                    if (!columnNames.Any(x => x.Equals("year", StringComparison.OrdinalIgnoreCase)))
+                        throw new InvalidOperationException("No year column returned even though required");
+
+                    rawYear = reader.GetString(reader.GetOrdinal("year"));
+
+                    if (columnNames.Any(x => x.Equals("month", StringComparison.OrdinalIgnoreCase)))
+                        rawMonth = reader.GetString(reader.GetOrdinal("month"));
+
+                    if (columnNames.Any(x => x.Equals("day", StringComparison.OrdinalIgnoreCase)))
+                        rawDay = reader.GetString(reader.GetOrdinal("day"));
+
+                    if (columnNames.Any(x => x.Equals("hour", StringComparison.OrdinalIgnoreCase)))
+                        rawHour = reader.GetString(reader.GetOrdinal("hour"));
+
+                    if (columnNames.Any(x => x.Equals("minute", StringComparison.OrdinalIgnoreCase)))
+                        rawMinute = reader.GetString(reader.GetOrdinal("minute"));
+
+                    int year, month, day, hour, minute;
+                    int.TryParse(rawYear, out year);
+                    int.TryParse(rawMonth, out month);
+                    int.TryParse(rawDay, out day);
+                    int.TryParse(rawHour, out hour);
+                    int.TryParse(rawMinute, out minute);
+
+                    var resolutionDate = new DateTime(year, month, day, hour, minute, 0);
+                    var resolutionValue = reader.GetDecimal(reader.GetOrdinal("Value"));
+                    values.Add(new KeyValuePair<DateTime, decimal>(resolutionDate, resolutionValue));
+                    break;
+            }
         }
     }
 }

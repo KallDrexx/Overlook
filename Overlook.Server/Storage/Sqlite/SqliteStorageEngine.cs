@@ -12,7 +12,7 @@ namespace Overlook.Server.Storage.Sqlite
 
         public SqliteStorageEngine(string databaseName, bool deleteIfDataExists = false)
         {
-            var connectionString = string.Format("Data Source={0};Version=3;DateTimeFormat=Ticks;", databaseName);
+            var connectionString = string.Format("Data Source={0};Version=3", databaseName);
             _db = new SQLiteConnection(connectionString);
             _db.Open();
 
@@ -40,7 +40,8 @@ namespace Overlook.Server.Storage.Sqlite
             foreach (var metric in query.Metrics)
             {
                 yield return
-                    DatabaseQueries.GetMetricValuesBetweenDates(_db, metric, query.StartDate, query.EndDate);
+                    DatabaseQueries.GetMetricValuesBetweenDates(_db, metric, query.StartDate, query.EndDate,
+                                                                query.Resolution);
             }
         }
     }

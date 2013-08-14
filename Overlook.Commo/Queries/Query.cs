@@ -8,5 +8,6 @@ namespace Overlook.Common.Queries
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public Metric[] Metrics { get; set; }
+        public QueryResolution Resolution { get; set; }
     }
 }
