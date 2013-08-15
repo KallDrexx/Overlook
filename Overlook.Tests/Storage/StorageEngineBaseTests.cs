@@ -676,5 +676,80 @@ namespace Overlook.Tests.Storage
             Assert.AreEqual(expectedDate2, resultsArray[0].Values[1].Key, "Incorrect metric date for second result");
             Assert.AreEqual(metricValue3, resultsArray[0].Values[1].Value, "Incorrect metric value for second result");
         }
+
+        [Test]
+        public void Can_Get_List_Of_All_Metrics_Stored()
+        {
+            var metric1 = new Metric("device1", "category1", "name1", "suffix1");
+            var metric2 = new Metric("device2", "category2", "name2", "suffix2");
+            var metric3 = new Metric("device3", "category3", "name3", "suffix3");
+            var metric4 = new Metric("device4", "category4", "name4", "suffix4");
+
+            var snapshot1 = new Snapshot
+            {
+                Date = DateTime.Now,
+                MetricValues = new KeyValuePair<Metric, decimal>[]
+                {
+                    new KeyValuePair<Metric, decimal>(metric1, 1m),
+                    new KeyValuePair<Metric, decimal>(metric2, 1m),
+                }
+            };
+
+            var snapshot2 = new Snapshot
+            {
+                Date = DateTime.Now,
+                MetricValues = new KeyValuePair<Metric, decimal>[]
+                {
+                    new KeyValuePair<Metric, decimal>(metric3, 1m),
+                    new KeyValuePair<Metric, decimal>(metric4, 1m),
+                }
+            };
+
+            _storageEngine.StoreSnapshot(snapshot1);
+            _storageEngine.StoreSnapshot(snapshot2);
+
+            var results = _storageEngine.GetKnownMetrics();
+            Assert.IsNotNull(results, "Returned metric result was null");
+
+            var array = results.ToArray();
+            Assert.AreEqual(4, array.Length, "Returned metric enumerable had an incorrect number of elements");
+            Assert.IsTrue(array.Contains(metric1), "Metric enumerable did not contain metric1");
+            Assert.IsTrue(array.Contains(metric2), "Metric enumerable did not contain metric2");
+            Assert.IsTrue(array.Contains(metric3), "Metric enumerable did not contain metric3");
+            Assert.IsTrue(array.Contains(metric4), "Metric enumerable did not contain metric4");
+        }
+
+        [Test]
+        public void Known_Metrics_Returned_Ordered_By_Device_Category_Then_Name()
+        {
+            var metric1 = new Metric("device1", "category1", "name1", "suffix1");
+            var metric2 = new Metric("device1", "category1", "name2", "suffix2");
+            var metric3 = new Metric("device1", "category2", "name1", "suffix3");
+            var metric4 = new Metric("device2", "category1", "name1", "suffix4");
+
+            var snapshot1 = new Snapshot
+            {
+                Date = DateTime.Now,
+                MetricValues = new KeyValuePair<Metric, decimal>[]
+                {
+                    new KeyValuePair<Metric, decimal>(metric3, 1m),
+                    new KeyValuePair<Metric, decimal>(metric4, 1m),
+                    new KeyValuePair<Metric, decimal>(metric1, 1m),
+                    new KeyValuePair<Metric, decimal>(metric2, 1m),
+                }
+            };
+
+            _storageEngine.StoreSnapshot(snapshot1);
+
+            var results = _storageEngine.GetKnownMetrics();
+            Assert.IsNotNull(results, "Returned metric result was null");
+
+            var array = results.ToArray();
+            Assert.AreEqual(4, array.Length, "Returned metric enumerable had an incorrect number of elements");
+            Assert.AreEqual(metric1, array[0], "First metric was incorrect");
+            Assert.AreEqual(metric2, array[1], "Second metric was incorrect");
+            Assert.AreEqual(metric3, array[2], "Third metric was incorrect");
+            Assert.AreEqual(metric4, array[3], "Fourth metric was incorrect");
+        }
     }
 }

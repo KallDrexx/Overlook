@@ -44,5 +44,10 @@ namespace Overlook.Server.Storage.Sqlite
                                                                 query.Resolution);
             }
         }
+
+        public IEnumerable<Metric> GetKnownMetrics()
+        {
+            return DatabaseQueries.GetKnownMetrics(_db);
+        }
     }
 }

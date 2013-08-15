@@ -86,6 +86,32 @@ namespace Overlook.Server.Storage.Sqlite
             };
         }
 
+        public static IEnumerable<Metric> GetKnownMetrics(SQLiteConnection connection)
+        {
+            if (connection == null)
+                throw new ArgumentNullException("connection");
+
+            const string query =
+                @"select distinct MetricDevice, MetricCategory, MetricName, SuffixLabel from MetricData
+                    order by MetricDevice, MetricCategory, MetricName";
+
+            using (var command = new SQLiteCommand(query, connection))
+            {
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var device = reader.GetString(0);
+                        var category = reader.GetString(1);
+                        var name = reader.GetString(2);
+                        var suffix = reader.GetString(3);
+
+                        yield return new Metric(device, category, name, suffix);
+                    }
+                }
+            }
+        }
+
         private static string GenerateQueryAtResolution(QueryResolution resolution)
         {
             const string fromClause = @"from MetricData ";

@@ -30,6 +30,11 @@
             SuffixLabel = suffixLabel;
         }
 
+        public override string ToString()
+        {
+            return string.Format("Metric: {0} {1} {2}", Device, Category, Name);
+        }
+
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj))
