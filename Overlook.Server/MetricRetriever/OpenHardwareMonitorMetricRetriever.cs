@@ -29,11 +29,16 @@ namespace Overlook.Server.MetricRetriever
             {
                 foreach (var sensor in hardware.Sensors)
                 {
-                    
+                    var device = hardware.Name;
+                    var category = sensor.SensorType.ToString();
+                    var name = sensor.Name;
+                    var value = Convert.ToDecimal(sensor.Value);
+
+                    // TODO: Set suffix based on sensor type
+                    var metric = new Metric(device, category, name, "");
+                    yield return new KeyValuePair<Metric, decimal>(metric, value);
                 }
             }
-
-            return null;
         }
     }
 }
