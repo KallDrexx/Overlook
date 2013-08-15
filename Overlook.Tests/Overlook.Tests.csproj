@@ -51,6 +51,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MetricRetrieverTests\OpenHardwareMonitorMetricRetrieverTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Storage\SqliteStorageEngineTests.cs" />
     <Compile Include="Storage\StorageEngineBaseTests.cs" />
