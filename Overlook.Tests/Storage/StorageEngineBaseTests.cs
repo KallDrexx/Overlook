@@ -12,6 +12,12 @@ namespace Overlook.Tests.Storage
     {
         protected IStorageEngine _storageEngine;
 
+        [TearDown]
+        public void TearDown()
+        {
+            _storageEngine.Dispose();
+        }
+
         [Test]
         public void Can_Save_And_Retrieve_Snapshot_Metrics()
         {

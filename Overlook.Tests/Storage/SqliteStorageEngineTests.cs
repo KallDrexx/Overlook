@@ -1,6 +1,4 @@
-﻿using System;
-using System.Data.SQLite;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using Overlook.Server.Storage.Sqlite;
 
 namespace Overlook.Tests.Storage
