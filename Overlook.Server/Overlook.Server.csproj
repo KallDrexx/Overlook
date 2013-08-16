@@ -41,6 +41,7 @@
       <HintPath>..\Libraries\OpenHardwareMonitorLib.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.SQLite, Version=1.0.87.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
@@ -56,6 +57,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApplicationSettings.cs" />
     <Compile Include="MetricRetriever\IMetricRetriever.cs" />
     <Compile Include="MetricRetriever\OpenHardwareMonitorMetricRetriever.cs" />
     <Compile Include="MetricRetriever\OpenProcessMetricRetriever.cs" />
