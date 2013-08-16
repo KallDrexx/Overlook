@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Drawing;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Nancy.Hosting.Self;
 using Overlook.Common.Data;
 using Overlook.Server.MetricRetriever;
 using Overlook.Server.Storage.Sqlite;
@@ -13,10 +15,13 @@ namespace Overlook.Server
     public class SystemTray : Form
     {
         private readonly NotifyIcon _trayIcon;
+        private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly Task _processingTask;
 
         public SystemTray()
         {
+            _cancellationTokenSource = new CancellationTokenSource();
+
             var trayMenu = new ContextMenu();
             trayMenu.MenuItems.Add(new MenuItem
             {
@@ -35,7 +40,7 @@ namespace Overlook.Server
                 Visible = true
             };
 
-            _processingTask = ProcessMetricRequests();
+            _processingTask = new Task(ProcessMetricRequests);
         }
 
         protected override void OnLoad(EventArgs e)
@@ -56,11 +61,18 @@ namespace Overlook.Server
 
         private void OnExit(object sender, EventArgs e)
         {
+            _cancellationTokenSource.Cancel();
+            _processingTask.Wait();
             Application.Exit();
         }
 
-        private async Task ProcessMetricRequests()
+        private void ProcessMetricRequests()
         {
+            // Start the webserver
+            var uri = new Uri("http://localhost:" + ApplicationSettings.WebInterfacePort);
+            var webServer = new NancyHost(uri);
+            webServer.Start();
+
             var retrievers = new IMetricRetriever[]
             {
                 new OpenProcessMetricRetriever(),
@@ -71,7 +83,7 @@ namespace Overlook.Server
 
             var lastCheck = DateTime.MinValue;
             var secondsBetweenChecks = ApplicationSettings.SecondsBetweenSnapshots;
-            while (true)
+            while (!_cancellationTokenSource.Token.IsCancellationRequested)
             {
                 if ((DateTime.Now - lastCheck).TotalSeconds > secondsBetweenChecks)
                 {
@@ -86,9 +98,11 @@ namespace Overlook.Server
                 }
                 else
                 {
-                    await Task.Delay(100);
+                    Thread.Sleep(100);
                 }
             }
+
+            webServer.Stop();
         }
     }
 }

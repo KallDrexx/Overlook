@@ -7,6 +7,7 @@ namespace Overlook.Server
     {
         public static string DatabaseName { get { return GetSetting<string>("DatabaseFileName"); } }
         public static int SecondsBetweenSnapshots { get { return GetSetting<int>("SecondsBetweenSnapshots"); } }
+        public static int WebInterfacePort { get { return GetSetting<int>("WebInterfacePort"); } }
 
         private static T GetSetting<T>(string settingName)
         {
