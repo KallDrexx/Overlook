@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{90085EE5-90A1-45C8-8CC0-F81583B5BD2F}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Overlook.Server</RootNamespace>
     <AssemblyName>Overlook.Server</AssemblyName>
@@ -36,6 +36,9 @@
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="OpenHardwareMonitorLib">
       <HintPath>..\Libraries\OpenHardwareMonitorLib.dll</HintPath>
@@ -50,6 +53,8 @@
     <Reference Include="System.Data.SQLite.Linq">
       <HintPath>..\packages\System.Data.SQLite.x86.1.0.87.0\lib\net45\System.Data.SQLite.Linq.dll</HintPath>
     </Reference>
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -67,6 +72,9 @@
     <Compile Include="Storage\Sqlite\DatabaseQueries.cs" />
     <Compile Include="Storage\Sqlite\DatabaseSchemaBuilder.cs" />
     <Compile Include="Storage\Sqlite\SqliteStorageEngine.cs" />
+    <Compile Include="SystemTray.cs">
+      <SubType>Form</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
