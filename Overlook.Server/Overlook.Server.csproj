@@ -58,6 +58,7 @@
   <ItemGroup>
     <Compile Include="MetricRetriever\IMetricRetriever.cs" />
     <Compile Include="MetricRetriever\OpenHardwareMonitorMetricRetriever.cs" />
+    <Compile Include="MetricRetriever\OpenProcessMetricRetriever.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Storage\IStorageEngine.cs" />
