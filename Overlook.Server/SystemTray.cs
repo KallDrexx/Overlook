@@ -8,6 +8,7 @@ using Nancy.Hosting.Self;
 using Overlook.Common.Data;
 using Overlook.Server.MetricRetriever;
 using Overlook.Server.Storage.Sqlite;
+using Overlook.Server.Web;
 
 namespace Overlook.Server
 {
@@ -68,9 +69,12 @@ namespace Overlook.Server
 
         private void ProcessMetricRequests()
         {
+            var storageEngine = new SqliteStorageEngine(ApplicationSettings.DatabaseName);
+
             // Start the webserver
+            var bootstrapper = new OverlookBootStrapper(storageEngine);
             var uri = new Uri("http://localhost:" + ApplicationSettings.WebInterfacePort);
-            var webServer = new NancyHost(uri);
+            var webServer = new NancyHost(uri, bootstrapper);
             webServer.Start();
 
             var retrievers = new IMetricRetriever[]
@@ -78,8 +82,6 @@ namespace Overlook.Server
                 new OpenProcessMetricRetriever(),
                 new OpenHardwareMonitorMetricRetriever()
             };
-
-            var storageEngine = new SqliteStorageEngine(ApplicationSettings.DatabaseName);
 
             var lastCheck = DateTime.MinValue;
             var secondsBetweenChecks = ApplicationSettings.SecondsBetweenSnapshots;

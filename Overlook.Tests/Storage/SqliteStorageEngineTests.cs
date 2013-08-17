@@ -1,13 +1,13 @@
-﻿using NUnit.Framework;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Overlook.Server.Storage.Sqlite;
 
 namespace Overlook.Tests.Storage
 {
-    [TestFixture]
+    [TestClass]
     public class SqliteStorageEngineTests : StorageEngineBaseTests
     {
-        [SetUp]
-        public void Setup()
+        [TestInitialize]
+        public void TestInitialize()
         {
             _storageEngine = new SqliteStorageEngine(":memory:", true);
         }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Overlook.Common.Data;
 using Overlook.Common.Queries;
 using Overlook.Server.Storage;
@@ -12,13 +12,13 @@ namespace Overlook.Tests.Storage
     {
         protected IStorageEngine _storageEngine;
 
-        [TearDown]
+        [TestCleanup]
         public void TearDown()
         {
             _storageEngine.Dispose();
         }
 
-        [Test]
+        [TestMethod]
         public void Can_Save_And_Retrieve_Snapshot_Metrics()
         {
             const string device = "device";
@@ -60,7 +60,7 @@ namespace Overlook.Tests.Storage
             Assert.AreEqual(metric1Value, resultsArray[0].Values[0].Value, "Incorrect metric value");
         }
 
-        [Test]
+        [TestMethod]
         public void Can_Return_Multiple_Metric_Type_Values()
         {
             const string device = "device";
@@ -113,7 +113,7 @@ namespace Overlook.Tests.Storage
             Assert.AreEqual(metric2Value, resultsArray[1].Values[0].Value, "Incorrect metric value for second metric");
         }
 
-        [Test]
+        [TestMethod]
         public void Multiple_Values_Returned_In_Order_Of_Snapshot_Date()
         {
             const string device = "device";
@@ -171,7 +171,7 @@ namespace Overlook.Tests.Storage
             Assert.AreEqual(metricValue1, resultsArray[0].Values[1].Value, "Incorrect metric value for second result");
         }
 
-        [Test]
+        [TestMethod]
         public void Query_Results_Returned_As_Average_Per_Minute()
         {
             const string device = "device";
@@ -235,7 +235,7 @@ namespace Overlook.Tests.Storage
             Assert.AreEqual(metricValue3, resultsArray[0].Values[1].Value, "Incorrect metric value for second result");
         }
 
-        [Test]
+        [TestMethod]
         public void Query_Results_Returned_As_Average_Per_Hour()
         {
             const string device = "device";
@@ -299,7 +299,7 @@ namespace Overlook.Tests.Storage
             Assert.AreEqual(metricValue3, resultsArray[0].Values[1].Value, "Incorrect metric value for second result");
         }
 
-        [Test]
+        [TestMethod]
         public void Query_Results_Returned_As_Average_Per_Day()
         {
             const string device = "device";
@@ -363,7 +363,7 @@ namespace Overlook.Tests.Storage
             Assert.AreEqual(metricValue3, resultsArray[0].Values[1].Value, "Incorrect metric value for second result");
         }
 
-        [Test]
+        [TestMethod]
         public void Query_Results_Returned_As_Average_Per_Month()
         {
             const string device = "device";
@@ -427,7 +427,7 @@ namespace Overlook.Tests.Storage
             Assert.AreEqual(metricValue3, resultsArray[0].Values[1].Value, "Incorrect metric value for second result");
         }
 
-        [Test]
+        [TestMethod]
         public void Query_Results_Returned_As_Average_Per_Year()
         {
             const string device = "device";
@@ -491,7 +491,7 @@ namespace Overlook.Tests.Storage
             Assert.AreEqual(metricValue3, resultsArray[0].Values[1].Value, "Incorrect metric value for second result");
         }
 
-        [Test]
+        [TestMethod]
         public void Query_Results_Returned_As_Average_Per_Fifteen_Minutes()
         {
             const string device = "device";
@@ -555,7 +555,7 @@ namespace Overlook.Tests.Storage
             Assert.AreEqual(metricValue3, resultsArray[0].Values[1].Value, "Incorrect metric value for second result");
         }
 
-        [Test]
+        [TestMethod]
         public void Query_Results_Returned_As_Average_Per_Ten_Minutes()
         {
             const string device = "device";
@@ -619,7 +619,7 @@ namespace Overlook.Tests.Storage
             Assert.AreEqual(metricValue3, resultsArray[0].Values[1].Value, "Incorrect metric value for second result");
         }
 
-        [Test]
+        [TestMethod]
         public void Query_Results_Returned_As_Average_Per_Half_Hour()
         {
             const string device = "device";
@@ -683,7 +683,7 @@ namespace Overlook.Tests.Storage
             Assert.AreEqual(metricValue3, resultsArray[0].Values[1].Value, "Incorrect metric value for second result");
         }
 
-        [Test]
+        [TestMethod]
         public void Can_Get_List_Of_All_Metrics_Stored()
         {
             var metric1 = new Metric("device1", "category1", "name1", "suffix1");
@@ -725,7 +725,7 @@ namespace Overlook.Tests.Storage
             Assert.IsTrue(array.Contains(metric4), "Metric enumerable did not contain metric4");
         }
 
-        [Test]
+        [TestMethod]
         public void Known_Metrics_Returned_Ordered_By_Device_Category_Then_Name()
         {
             var metric1 = new Metric("device1", "category1", "name1", "suffix1");

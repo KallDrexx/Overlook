@@ -1,12 +1,13 @@
-﻿using NUnit.Framework;
+﻿using System.Linq;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Overlook.Server.MetricRetriever;
 
 namespace Overlook.Tests.MetricRetrieverTests
 {
-    [TestFixture]
+    [TestClass]
     public class OpenHardwareMonitorMetricRetrieverTests
     {
-        [Ignore("OpenHardwareMonitor crashes in Nunit due to Assembly.GetEntryAssembly() being null")]
+        [TestMethod]
         public void Can_Get_Metrics()
         {
             var retriever = new OpenHardwareMonitorMetricRetriever();
@@ -15,7 +16,7 @@ namespace Overlook.Tests.MetricRetrieverTests
             // Since what gets returned is heavily based on what machine its run on
             // just make sure the results weren't empty
             Assert.IsNotNull(metricValues, "Returned metric values was null");
-            Assert.IsNotEmpty(metricValues, "No metric values returned");
+            Assert.IsTrue(metricValues.Any(), "No metric values returned");
         }
     }
 }

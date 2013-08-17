@@ -81,7 +81,8 @@
     <Compile Include="SystemTray.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="WebModules\TestModule.cs" />
+    <Compile Include="Web\OverlookBootStrapper.cs" />
+    <Compile Include="Web\MetricsModule.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
