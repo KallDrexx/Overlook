@@ -757,5 +757,28 @@ namespace Overlook.Tests.Storage
             Assert.AreEqual(metric3, array[2], "Third metric was incorrect");
             Assert.AreEqual(metric4, array[3], "Fourth metric was incorrect");
         }
+
+        [TestMethod]
+        public void Can_Retrieve_Number_Of_Snapshots_Returned()
+        {
+            var metric = new Metric("device", "category", "name", "suffix");
+            var snapshot1 = new Snapshot
+            {
+                Date = DateTime.Now,
+                MetricValues = new[] {new KeyValuePair<Metric, decimal>(metric, 1m)}
+            };
+
+            var snapshot2 = new Snapshot
+            {
+                Date = DateTime.Now.AddMinutes(5),
+                MetricValues = new[] { new KeyValuePair<Metric, decimal>(metric, 1m) }
+            };
+
+            _storageEngine.StoreSnapshot(snapshot1);
+            _storageEngine.StoreSnapshot(snapshot2);
+            var snapshotCount = _storageEngine.GetSnapshotCount();
+
+            Assert.AreEqual(2, snapshotCount, "Incorrect number of snapshots reported");
+        }
     }
 }

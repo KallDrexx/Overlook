@@ -49,5 +49,10 @@ namespace Overlook.Server.Storage.Sqlite
         {
             return DatabaseQueries.GetKnownMetrics(_db);
         }
+
+        public int GetSnapshotCount()
+        {
+            return DatabaseQueries.GetSnapshotCounts(_db);
+        }
     }
 }

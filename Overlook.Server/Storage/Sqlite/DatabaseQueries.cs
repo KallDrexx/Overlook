@@ -112,6 +112,17 @@ namespace Overlook.Server.Storage.Sqlite
             }
         }
 
+        public static int GetSnapshotCounts(SQLiteConnection connection)
+        {
+            const string query = @"select count(*) from (select distinct Date from MetricData)";
+
+            if (connection == null)
+                throw new ArgumentNullException("connection");
+
+            using (var command = new SQLiteCommand(query, connection))
+                return Convert.ToInt32(command.ExecuteScalar());
+        }
+
         private static string GenerateQueryAtResolution(QueryResolution resolution)
         {
             const string fromClause = @"from MetricData ";

@@ -16,5 +16,6 @@ namespace Overlook.Server.Storage
 
         IEnumerable<QueriedMetricResult> ExecuteQuery(Query query);
         IEnumerable<Metric> GetKnownMetrics();
+        int GetSnapshotCount();
     }
 }
