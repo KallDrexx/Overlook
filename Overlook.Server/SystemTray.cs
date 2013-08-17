@@ -12,24 +12,28 @@ using Overlook.Server.Web;
 
 namespace Overlook.Server
 {
-
     public class SystemTray : Form
     {
         private readonly NotifyIcon _trayIcon;
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly Task _processingTask;
 
+        private readonly MenuItem _storageSizeMenuItem;
+
         public SystemTray()
         {
             _cancellationTokenSource = new CancellationTokenSource();
 
             var trayMenu = new ContextMenu();
+            _storageSizeMenuItem = new MenuItem {Enabled = false};
+
             trayMenu.MenuItems.Add(new MenuItem
             {
                 Text = "Running",
                 Enabled = false
             });
 
+            trayMenu.MenuItems.Add(_storageSizeMenuItem);
             trayMenu.MenuItems.Add("-");
             trayMenu.MenuItems.Add("Exit", OnExit);
 
@@ -71,6 +75,9 @@ namespace Overlook.Server
         {
             var storageEngine = new SqliteStorageEngine(ApplicationSettings.DatabaseName);
 
+            var size = storageEngine.GetStoredSize();
+            Invoke((Action)(() => UpdateStorageSizeDisplay(size)));
+
             // Start the webserver
             var bootstrapper = new OverlookBootStrapper(storageEngine);
             var uri = new Uri("http://localhost:" + ApplicationSettings.WebInterfacePort);
@@ -97,6 +104,10 @@ namespace Overlook.Server
                     };
 
                     storageEngine.StoreSnapshot(snapshot);
+                    
+                    // Update displays
+                    size = storageEngine.GetStoredSize();
+                    Invoke((Action)(() => UpdateStorageSizeDisplay(size)));
                 }
                 else
                 {
@@ -105,6 +116,25 @@ namespace Overlook.Server
             }
 
             webServer.Stop();
+        }
+
+        private void UpdateStorageSizeDisplay(long size)
+        {
+            const int divisor = 1024;
+
+            var displayedSize = Convert.ToDecimal(size);
+            var labels = new[] {"B", "KB", "MB", "GB"};
+            var labelIndex = 0;
+            var currentLabel = labels[labelIndex];
+            while (displayedSize > divisor)
+            {
+                displayedSize = displayedSize/divisor;
+                labelIndex++;
+                currentLabel = labels[labelIndex];
+            }
+
+            var display = string.Format("Size: {0} {1}", displayedSize, currentLabel);
+            _storageSizeMenuItem.Text = display;
         }
     }
 }
