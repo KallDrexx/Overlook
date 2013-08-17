@@ -123,6 +123,28 @@ namespace Overlook.Server.Storage.Sqlite
                 return Convert.ToInt32(command.ExecuteScalar());
         }
 
+        public static long GetPageSize(SQLiteConnection connection)
+        {
+            const string query = @"pragma page_size;";
+
+            if (connection == null)
+                throw new ArgumentNullException("connection");
+
+            using (var command = new SQLiteCommand(query, connection))
+                return Convert.ToInt64(command.ExecuteScalar());
+        }
+
+        public static long GetPageCount(SQLiteConnection connection)
+        {
+            const string query = @"pragma page_count;";
+
+            if (connection == null)
+                throw new ArgumentNullException("connection");
+
+            using (var command = new SQLiteCommand(query, connection))
+                return Convert.ToInt64(command.ExecuteScalar());
+        }
+
         private static string GenerateQueryAtResolution(QueryResolution resolution)
         {
             const string fromClause = @"from MetricData ";

@@ -780,5 +780,23 @@ namespace Overlook.Tests.Storage
 
             Assert.AreEqual(2, snapshotCount, "Incorrect number of snapshots reported");
         }
+
+        [TestMethod]
+        public void Can_Retrieve_Storage_Size()
+        {
+            var metric = new Metric("device", "category", "name", "suffix");
+            var snapshot1 = new Snapshot
+            {
+                Date = DateTime.Now,
+                MetricValues = new[] { new KeyValuePair<Metric, decimal>(metric, 1m) }
+            };
+
+            _storageEngine.StoreSnapshot(snapshot1);
+            var size = _storageEngine.GetStoredSize();
+
+            // Since we cant predict how much space the stored snapshot will be
+            // just make sure it's more than nothing
+            Assert.IsTrue(size > 0, "Reported size was less than or equal to zero");
+        }
     }
 }

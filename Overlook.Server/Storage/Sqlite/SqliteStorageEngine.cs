@@ -54,5 +54,13 @@ namespace Overlook.Server.Storage.Sqlite
         {
             return DatabaseQueries.GetSnapshotCounts(_db);
         }
+
+        public long GetStoredSize()
+        {
+            var pageSize = DatabaseQueries.GetPageSize(_db);
+            var pageCount = DatabaseQueries.GetPageCount(_db);
+
+            return pageSize * pageCount;
+        }
     }
 }
