@@ -65,6 +65,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data\MetricTests.cs" />
     <Compile Include="MetricRetrieverTests\OpenHardwareMonitorMetricRetrieverTests.cs" />
     <Compile Include="MetricRetrieverTests\OpenProcessMetricRetrieverTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

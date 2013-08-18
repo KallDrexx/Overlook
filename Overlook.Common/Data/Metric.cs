@@ -30,6 +30,11 @@
             SuffixLabel = suffixLabel;
         }
 
+        public string ToParsableString()
+        {
+            return string.Format("({0}|{1}|{2}|{3})", Device, Category, Name, SuffixLabel);
+        }
+
         public override string ToString()
         {
             return string.Format("Metric: {0} {1} {2}", Device, Category, Name);
@@ -61,6 +66,21 @@
                 hashCode = (hashCode * 397) ^ (SuffixLabel != null ? SuffixLabel.GetHashCode() : 0);
                 return hashCode;
             }
+        }
+
+        public static Metric Create(string parsableString)
+        {
+            if (parsableString == null)
+                return null;
+
+            parsableString = parsableString.Replace("(", "")
+                                           .Replace(")", "");
+
+            var parts = parsableString.Split(new[] {'|'});
+            if (parts.Length != 4)
+                return null;
+
+            return new Metric(parts[0], parts[1], parts[2], parts[3]);
         }
     }
 }
