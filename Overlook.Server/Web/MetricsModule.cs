@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using Nancy;
-using Nancy.ModelBinding;
 using Overlook.Common.Data;
 using Overlook.Common.Queries;
 using Overlook.Server.Storage;
@@ -26,7 +25,9 @@ namespace Overlook.Server.Web
             {
                 DateTime start, end;
                 DateTime.TryParse(Request.Query.start, out start);
-                DateTime.TryParse(Request.Query.end, out end);
+                if (!DateTime.TryParse(Request.Query.end, out end))
+                    end = DateTime.MaxValue;
+
                 var metric = Metric.Create(Request.Query.metrics);
                 var query = new Query
                 {

@@ -99,5 +99,33 @@ namespace Overlook.Tests.Web
             Assert.AreEqual(date1, result[0].Values[0].Key, "Value array's date was incorrect");
             Assert.AreEqual(value1, result[0].Values[0].Value, "Value array's value was incorrect");
         }
+
+        [TestMethod]
+        public void Query_Assumes_Max_DateTime_For_End_If_Not_Specified()
+        {
+            var path = "/metrics/query";
+
+            var response = _browser.Get(path, with =>
+            {
+                with.HttpRequest();
+            });
+
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, "Incorrect status code returned");
+            _storageEngine.Verify(x => x.ExecuteQuery(It.Is<Query>(y => y.EndDate == DateTime.MaxValue)), Times.Once());
+        }
+
+        [TestMethod]
+        public void Query_Assumes_Min_DateTime_For_Start_If_Not_Specified()
+        {
+            var path = "/metrics/query";
+
+            var response = _browser.Get(path, with =>
+            {
+                with.HttpRequest();
+            });
+
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, "Incorrect status code returned");
+            _storageEngine.Verify(x => x.ExecuteQuery(It.Is<Query>(y => y.StartDate == DateTime.MinValue)), Times.Once());
+        }
     }
 }
