@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Overlook.Tests", "Overlook.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Overlook.Common", "Overlook.Common\Overlook.Common.csproj", "{DDA24DE9-B5A6-4DBE-9811-A1CA5173558E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Overlook.Gui", "Overlook.Gui\Overlook.Gui.csproj", "{A82AC27C-D386-4439-9C52-225657A76E28}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +34,10 @@ Global
 		{DDA24DE9-B5A6-4DBE-9811-A1CA5173558E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DDA24DE9-B5A6-4DBE-9811-A1CA5173558E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DDA24DE9-B5A6-4DBE-9811-A1CA5173558E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A82AC27C-D386-4439-9C52-225657A76E28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A82AC27C-D386-4439-9C52-225657A76E28}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A82AC27C-D386-4439-9C52-225657A76E28}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A82AC27C-D386-4439-9C52-225657A76E28}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
