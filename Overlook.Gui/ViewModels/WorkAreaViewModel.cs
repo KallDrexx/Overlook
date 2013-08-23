@@ -4,6 +4,7 @@ using System.Linq;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using Overlook.Common.Data;
+using Overlook.Gui.Services;
 
 namespace Overlook.Gui.ViewModels
 {
@@ -13,13 +14,33 @@ namespace Overlook.Gui.ViewModels
         private readonly ObservableCollection<string> _metricDevices;
         private readonly ObservableCollection<string> _metricCategories;
         private readonly ObservableCollection<string> _metricNames;
-        private readonly ObservableCollection<Metric> _queryMetrics; 
+        private readonly ObservableCollection<Metric> _queryMetrics;
+        private readonly QueryService _queryService;
  
         private string _serverUrl;
         private string _selectedMetricDevice;
         private string _selectedMetricCategory;
         private string _selectedMetricName;
         private Metric _selectedQueryMetric;
+
+        public WorkAreaViewModel(QueryService queryService)
+        {
+            _queryService = queryService;
+            _allMetrics = new List<Metric>();
+            _metricDevices = new ObservableCollection<string>();
+            _metricCategories = new ObservableCollection<string>();
+            _metricNames = new ObservableCollection<string>();
+            _queryMetrics = new ObservableCollection<Metric>();
+
+            if (IsInDesignMode)
+            {
+                SetupDesignData();
+            }
+            else
+            {
+                InitializeCommands();
+            }
+        }
 
         public IEnumerable<string> MetricDevices { get { return _metricDevices; } }
         public IEnumerable<string> MetricCategories { get { return _metricCategories; } }
@@ -28,6 +49,9 @@ namespace Overlook.Gui.ViewModels
 
         public RelayCommand AddMetricToQueryList { get; private set; }
         public RelayCommand RemoveMetricFromQueryList { get; private set; }
+        public RelayCommand GetMetricsFromServerCommand { get; private set; }
+
+        public bool MetricsLoaded { get { return _allMetrics.Count > 0; } }
 
         public string ServerUrl
         {
@@ -67,24 +91,6 @@ namespace Overlook.Gui.ViewModels
             set { Set(() => SelectedQueryMetric, ref _selectedQueryMetric, value); }
         }
 
-        public WorkAreaViewModel()
-        {
-            _allMetrics = new List<Metric>();
-            _metricDevices = new ObservableCollection<string>();
-            _metricCategories = new ObservableCollection<string>();
-            _metricNames = new ObservableCollection<string>();
-            _queryMetrics = new ObservableCollection<Metric>();
-
-            if (IsInDesignMode)
-            {
-                SetupDesignData();
-            }
-            else
-            {
-                InitializeCommands();
-            }
-        }
-
         private void SetupDesignData()
         {
             _serverUrl = "http://some.url:4566/";
@@ -121,6 +127,30 @@ namespace Overlook.Gui.ViewModels
                 if (_selectedQueryMetric != null)
                     _queryMetrics.Remove(_selectedQueryMetric);
             });
+
+            GetMetricsFromServerCommand = new RelayCommand(() =>
+            {
+                _allMetrics.Clear();
+                _queryMetrics.Clear();
+                _allMetrics.AddRange(_queryService.GetAvailableMetrics(ServerUrl));
+
+                UpdateMetricDevices();
+                RaisePropertyChanged(() => MetricsLoaded);
+            });
+        }
+
+        private void UpdateMetricDevices()
+        {
+            var devices = _allMetrics.Select(x => x.Device)
+                                     .Distinct()
+                                     .OrderBy(x => x)
+                                     .ToArray();
+
+            _metricDevices.Clear();
+            foreach (var device in devices)
+                _metricDevices.Add(device);
+
+            UpdateMetricCategories();
         }
 
         private void UpdateMetricCategories()
@@ -145,7 +175,7 @@ namespace Overlook.Gui.ViewModels
 
             var names = _allMetrics.Where(x => x.Device == _selectedMetricDevice)
                                     .Where(x => x.Category == _selectedMetricCategory)
-                                    .Select(x => x.Category)
+                                    .Select(x => x.Name)
                                     .OrderBy(x => x)
                                     .Distinct()
                                     .ToList();

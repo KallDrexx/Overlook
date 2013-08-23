@@ -30,6 +30,7 @@
                 <TextBox Text="{Binding ServerUrl, Mode=TwoWay}"
                          Grid.Column="0"/>
                 <Button Content="Get Metric Types"
+                        Command="{Binding GetMetricsFromServerCommand}"
                         Grid.Column="1"/>
             </Grid>
 
@@ -40,6 +41,7 @@
                 </Grid.ColumnDefinitions>
                 <TextBlock Text="Device:" Grid.Column="0"/>
                 <ComboBox Grid.Column="1" 
+                          IsEnabled="{Binding MetricsLoaded}"
                           ItemsSource="{Binding MetricDevices}"
                           SelectedValue="{Binding SelectedMetricDevice, Mode=TwoWay}"/>
             </Grid>
@@ -51,6 +53,7 @@
                 </Grid.ColumnDefinitions>
                 <TextBlock Text="Category:" Grid.Column="0"/>
                 <ComboBox Grid.Column="1" 
+                          IsEnabled="{Binding MetricsLoaded}"
                           ItemsSource="{Binding MetricCategories}"
                           SelectedItem="{Binding SelectedMetricCategory, Mode=TwoWay}"/>
             </Grid>
@@ -62,6 +65,7 @@
                 </Grid.ColumnDefinitions>
                 <TextBlock Text="Name:" Grid.Column="0"/>
                 <ComboBox Grid.Column="1" 
+                          IsEnabled="{Binding MetricsLoaded}"
                           ItemsSource="{Binding MetricNames}"
                           SelectedItem="{Binding SelectedMetricName}"/>
             </Grid>
@@ -73,16 +77,25 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="60"/>
                 </Grid.ColumnDefinitions>
-                
-                <Button Content="Add" Command="{Binding AddMetricToQueryList}" Grid.Column="1"/>
-                <Button Content="Remove" Command="{Binding RemoveMetricFromQueryList}" Grid.Column="3"/>
+
+                <Button Content="Add" 
+                        IsEnabled="{Binding MetricsLoaded}"
+                        Command="{Binding AddMetricToQueryList}" Grid.Column="1"/>
+
+                <Button Content="Remove" 
+                        IsEnabled="{Binding MetricsLoaded}"
+                        Command="{Binding RemoveMetricFromQueryList}" 
+                        Grid.Column="3"/>
             </Grid>
 
             <ListBox VerticalAlignment="Stretch" 
+                     IsEnabled="{Binding MetricsLoaded}"
                      ItemsSource="{Binding QueryMetrics}" 
                      SelectedItem="{Binding SelectedQueryMetric}"
                      Grid.Row="5" />
-            <Button Content="Plot Metrics" Grid.Row="6" />
+            <Button Content="Plot Metrics"
+                    IsEnabled="{Binding MetricsLoaded}"
+                    Grid.Row="6" />
         </Grid>
         
         <Grid Grid.Column="2">

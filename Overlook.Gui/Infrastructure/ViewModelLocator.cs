@@ -1,4 +1,5 @@
-﻿using Overlook.Gui.ViewModels;
+﻿using Overlook.Gui.Services;
+using Overlook.Gui.ViewModels;
 using TinyIoC;
 
 namespace Overlook.Gui.Infrastructure
@@ -10,6 +11,8 @@ namespace Overlook.Gui.Infrastructure
         public ViewModelLocator()
         {
             _container = new TinyIoCContainer();
+
+            _container.Register<QueryService>().AsSingleton();
         }
 
         // Available View Models
