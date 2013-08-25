@@ -102,11 +102,11 @@ namespace Overlook.Server
                 new OpenHardwareMonitorMetricRetriever()
             };
 
-            var lastCheck = DateTime.MinValue;
+            var lastSnapshotTime = DateTime.MinValue;
             var secondsBetweenChecks = ApplicationSettings.SecondsBetweenSnapshots;
             while (!_cancellationTokenSource.Token.IsCancellationRequested)
             {
-                if ((DateTime.Now - lastCheck).TotalSeconds > secondsBetweenChecks)
+                if ((DateTime.Now - lastSnapshotTime).TotalSeconds > secondsBetweenChecks)
                 {
                     var snapshot = new Snapshot
                     {
@@ -120,6 +120,8 @@ namespace Overlook.Server
                     // Update displays
                     size = storageEngine.GetStoredSize();
                     Invoke((Action)(() => UpdateStorageSizeDisplay(size)));
+
+                    lastSnapshotTime = DateTime.Now;
                 }
                 else
                 {
