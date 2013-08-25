@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
-using System.Linq;
+using Overlook.Server.Extensions;
 using Overlook.Common.Data;
 using Overlook.Common.Queries;
 
@@ -38,7 +38,7 @@ namespace Overlook.Server.Storage.Sqlite
                 {
                     using (var command = new SQLiteCommand(insertNonQuery, connection))
                     {
-                        command.Parameters.AddWithValue("@date", snapshot.Date);
+                        command.Parameters.AddWithValue("@date", snapshot.Date.ToUtcUnixTimestamp());
                         command.Parameters.AddWithValue("@device", metricValuePair.Key.Device);
                         command.Parameters.AddWithValue("@category", metricValuePair.Key.Category);
                         command.Parameters.AddWithValue("@name", metricValuePair.Key.Name);
@@ -71,8 +71,8 @@ namespace Overlook.Server.Storage.Sqlite
                 command.Parameters.AddWithValue("@device", metric.Device);
                 command.Parameters.AddWithValue("@category", metric.Category);
                 command.Parameters.AddWithValue("@name", metric.Name);
-                command.Parameters.AddWithValue("@start", startDate);
-                command.Parameters.AddWithValue("@end", endDate);
+                command.Parameters.AddWithValue("@start", startDate.ToUtcUnixTimestamp());
+                command.Parameters.AddWithValue("@end", endDate.ToUtcUnixTimestamp());
 
                 using (var reader = command.ExecuteReader())
                     while (reader.Read())
@@ -155,20 +155,20 @@ namespace Overlook.Server.Storage.Sqlite
                     and Date between @start and @end ";
 
             // Different select clauses for the different resolutions
-            const string allSelectClause = @"select Date, Value ";
+            const string allSelectClause = @"select strftime('%Y-%m-%dT%H:%M:%S', datetime(Date, 'unixepoch', 'localtime')) as 'Date', Value ";
             const string resolutionSelectClause = @"select {0} as 'GroupedDate', avg(Value) as 'Value' ";
             const string resolutionGroupByClause = @"group by {0} ";
 
             var resolutionDateParts = new Dictionary<QueryResolution, string>
             {
-                {QueryResolution.Minute, "strftime('%Y-%m-%dT%H:%M:00.000', Date)"},
-                {QueryResolution.Hour, "strftime('%Y-%m-%dT%H:00:00.000', Date)"},
-                {QueryResolution.Day, "strftime('%Y-%m-%dT00:00:00.000', Date)"},
-                {QueryResolution.Month,"strftime('%Y-%m-01T00:00:00.000', Date)" },
-                {QueryResolution.Year,"strftime('%Y-01-01T00:00:00.000', Date)" },
-                {QueryResolution.FifteenMinutes, "strftime('%Y-%m-%dT%H:', Date) || ((strftime('%M', Date)/15) * 15)"},
-                {QueryResolution.TenMinutes, "strftime('%Y-%m-%dT%H:', Date) || ((strftime('%M', Date)/10) * 10)"},
-                {QueryResolution.HalfHour, "strftime('%Y-%m-%dT%H:', Date) || ((strftime('%M', Date)/30) * 30)"},
+                {QueryResolution.Minute, "strftime('%Y-%m-%dT%H:%M:00.000', datetime(Date, 'unixepoch', 'localtime'))"},
+                {QueryResolution.Hour, "strftime('%Y-%m-%dT%H:00:00.000', datetime(Date, 'unixepoch', 'localtime'))"},
+                {QueryResolution.Day, "strftime('%Y-%m-%dT00:00:00.000', datetime(Date, 'unixepoch', 'localtime'))"},
+                {QueryResolution.Month,"strftime('%Y-%m-01T00:00:00.000', datetime(Date, 'unixepoch', 'localtime'))" },
+                {QueryResolution.Year,"strftime('%Y-01-01T00:00:00.000', datetime(Date, 'unixepoch', 'localtime'))" },
+                {QueryResolution.FifteenMinutes, "strftime('%Y-%m-%dT%H:', datetime(Date, 'unixepoch', 'localtime')) || ((strftime('%M', datetime(Date, 'unixepoch', 'localtime'))/15) * 15)"},
+                {QueryResolution.TenMinutes, "strftime('%Y-%m-%dT%H:', datetime(Date, 'unixepoch', 'localtime')) || ((strftime('%M', datetime(Date, 'unixepoch', 'localtime'))/10) * 10)"},
+                {QueryResolution.HalfHour, "strftime('%Y-%m-%dT%H:', datetime(Date, 'unixepoch', 'localtime')) || ((strftime('%M', datetime(Date, 'unixepoch', 'localtime'))/30) * 30)"},
             };
 
             // Build the query

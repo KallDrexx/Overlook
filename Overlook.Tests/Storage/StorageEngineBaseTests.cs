@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Overlook.Common.Data;
 using Overlook.Common.Queries;
+using Overlook.Server.Extensions;
 using Overlook.Server.Storage;
 
 namespace Overlook.Tests.Storage
@@ -31,7 +32,7 @@ namespace Overlook.Tests.Storage
 
             var snapshot1 = new Snapshot
             {
-                Date = DateTime.Now,
+                Date = DateTime.Now.ToComparableDateTime(),
                 MetricValues = new KeyValuePair<Metric, decimal>[]
                 {
                     new KeyValuePair<Metric, decimal>(metric1, metric1Value), 
@@ -76,7 +77,7 @@ namespace Overlook.Tests.Storage
 
             var snapshot1 = new Snapshot
             {
-                Date = DateTime.Now,
+                Date = DateTime.Now.ToComparableDateTime(),
                 MetricValues = new KeyValuePair<Metric, decimal>[]
                 {
                     new KeyValuePair<Metric, decimal>(metric1, metric1Value), 
@@ -127,7 +128,7 @@ namespace Overlook.Tests.Storage
 
             var snapshot1 = new Snapshot
             {
-                Date = DateTime.Now,
+                Date = DateTime.Now.ToComparableDateTime(),
                 MetricValues = new KeyValuePair<Metric, decimal>[]
                 {
                     new KeyValuePair<Metric, decimal>(metric1, metricValue1), 
@@ -136,7 +137,7 @@ namespace Overlook.Tests.Storage
 
             var snapshot2 = new Snapshot
             {
-                Date = DateTime.Now.AddMinutes(-5),
+                Date = DateTime.Now.AddMinutes(-5).ToComparableDateTime(),
                 MetricValues = new KeyValuePair<Metric, decimal>[]
                 {
                     new KeyValuePair<Metric, decimal>(metric1, metricValue2), 

@@ -69,6 +69,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationSettings.cs" />
+    <Compile Include="Extensions\DateExtensions.cs" />
     <Compile Include="MetricRetriever\IMetricRetriever.cs" />
     <Compile Include="MetricRetriever\OpenHardwareMonitorMetricRetriever.cs" />
     <Compile Include="MetricRetriever\OpenProcessMetricRetriever.cs" />
@@ -85,7 +86,9 @@
     <Compile Include="Web\MetricsModule.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="app.manifest" />
     <None Include="packages.config" />
   </ItemGroup>
