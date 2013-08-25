@@ -64,10 +64,22 @@ namespace Overlook.Server
             base.Dispose(disposing);
         }
 
-        private void OnExit(object sender, EventArgs e)
+        private async void OnExit(object sender, EventArgs e)
         {
+            const int maxSecondsToWaitForCancellation = 60;
+            var cancellationTime = DateTime.Now;
+
             _cancellationTokenSource.Cancel();
-            _processingTask.Wait();
+
+            while (!_processingTask.IsCanceled && !_processingTask.IsCompleted && !_processingTask.IsFaulted)
+            {
+                if ((DateTime.Now - cancellationTime).TotalSeconds > maxSecondsToWaitForCancellation)
+                    break;
+
+                await Task.Delay(100);
+            }
+
+            _trayIcon.Dispose();
             Application.Exit();
         }
 
