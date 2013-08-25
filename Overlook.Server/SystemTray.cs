@@ -145,7 +145,7 @@ namespace Overlook.Server
                 currentLabel = labels[labelIndex];
             }
 
-            var display = string.Format("Size: {0} {1}", displayedSize, currentLabel);
+            var display = string.Format("Size: {0:0.00} {1}", displayedSize, currentLabel);
             _storageSizeMenuItem.Text = display;
         }
     }
