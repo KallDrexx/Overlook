@@ -19,6 +19,7 @@ namespace Overlook.Server
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly Task _processingTask;
         private readonly SystemTrayMenuManager _systemTrayMenuManager;
+        private readonly int _webPortNumber;
 
         public SystemTray()
         {
@@ -30,7 +31,8 @@ namespace Overlook.Server
                 Visible = true
             };
 
-            _systemTrayMenuManager = new SystemTrayMenuManager(_trayIcon);
+            _webPortNumber = ApplicationSettings.WebInterfacePort;
+            _systemTrayMenuManager = new SystemTrayMenuManager(_trayIcon, _webPortNumber);
             _systemTrayMenuManager.ExitRequested += OnExit;
 
             _processingTask = new Task(ProcessMetricRequests);
@@ -81,7 +83,7 @@ namespace Overlook.Server
 
             // Start the webserver
             var bootstrapper = new OverlookBootStrapper(storageEngine);
-            var uri = new Uri("http://localhost:" + ApplicationSettings.WebInterfacePort);
+            var uri = new Uri("http://localhost:" + _webPortNumber);
             var webServer = new NancyHost(uri, bootstrapper);
             webServer.Start();
 

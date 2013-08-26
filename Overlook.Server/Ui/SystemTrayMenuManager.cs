@@ -10,7 +10,7 @@ namespace Overlook.Server.Ui
         private readonly MenuItem _sizeDisplayMenuItem;
         private readonly MenuItem _exitMenuItem;
 
-        public SystemTrayMenuManager(NotifyIcon systemTrayIcon)
+        public SystemTrayMenuManager(NotifyIcon systemTrayIcon, int webPort)
         {
             if (systemTrayIcon == null)
                 throw new ArgumentNullException("systemTrayIcon");
@@ -24,6 +24,7 @@ namespace Overlook.Server.Ui
             {
                 _statusDisplayMenuItem,
                 _sizeDisplayMenuItem,
+                new MenuItem {Text = "Port: " + webPort, Enabled = false}, 
                 new MenuItem("-"), 
                 _exitMenuItem
             });
