@@ -8,6 +8,7 @@ using Nancy.Hosting.Self;
 using Overlook.Common.Data;
 using Overlook.Server.MetricRetriever;
 using Overlook.Server.Storage.Sqlite;
+using Overlook.Server.Ui;
 using Overlook.Server.Web;
 
 namespace Overlook.Server
@@ -17,33 +18,20 @@ namespace Overlook.Server
         private readonly NotifyIcon _trayIcon;
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly Task _processingTask;
-
-        private readonly MenuItem _storageSizeMenuItem;
+        private readonly SystemTrayMenuManager _systemTrayMenuManager;
 
         public SystemTray()
         {
             _cancellationTokenSource = new CancellationTokenSource();
-
-            var trayMenu = new ContextMenu();
-            _storageSizeMenuItem = new MenuItem {Enabled = false};
-
-            trayMenu.MenuItems.Add(new MenuItem
-            {
-                Text = "Running",
-                Enabled = false
-            });
-
-            trayMenu.MenuItems.Add(_storageSizeMenuItem);
-            trayMenu.MenuItems.Add("-");
-            trayMenu.MenuItems.Add("Exit", OnExit);
-
             _trayIcon = new NotifyIcon
             {
                 Text = "Overlook Server",
                 Icon = new Icon(SystemIcons.Application, 40, 40),
-                ContextMenu = trayMenu,
                 Visible = true
             };
+
+            _systemTrayMenuManager = new SystemTrayMenuManager(_trayIcon);
+            _systemTrayMenuManager.ExitRequested += OnExit;
 
             _processingTask = new Task(ProcessMetricRequests);
         }
@@ -88,7 +76,8 @@ namespace Overlook.Server
             var storageEngine = new SqliteStorageEngine(ApplicationSettings.DatabaseName);
 
             var size = storageEngine.GetStoredSize();
-            Invoke((Action)(() => UpdateStorageSizeDisplay(size)));
+            var snapshotCount = storageEngine.GetSnapshotCount();
+            Invoke((Action)(() => _systemTrayMenuManager.UpdateStatus(ServerStatus.Running, size, snapshotCount)));
 
             // Start the webserver
             var bootstrapper = new OverlookBootStrapper(storageEngine);
@@ -119,7 +108,8 @@ namespace Overlook.Server
                     
                     // Update displays
                     size = storageEngine.GetStoredSize();
-                    Invoke((Action)(() => UpdateStorageSizeDisplay(size)));
+                    snapshotCount = storageEngine.GetSnapshotCount();
+                    Invoke((Action)(() => _systemTrayMenuManager.UpdateStatus(ServerStatus.Running, size, snapshotCount)));
 
                     lastSnapshotTime = DateTime.Now;
                 }
@@ -130,25 +120,6 @@ namespace Overlook.Server
             }
 
             webServer.Stop();
-        }
-
-        private void UpdateStorageSizeDisplay(long size)
-        {
-            const int divisor = 1024;
-
-            var displayedSize = Convert.ToDecimal(size);
-            var labels = new[] {"B", "KB", "MB", "GB"};
-            var labelIndex = 0;
-            var currentLabel = labels[labelIndex];
-            while (displayedSize > divisor)
-            {
-                displayedSize = displayedSize/divisor;
-                labelIndex++;
-                currentLabel = labels[labelIndex];
-            }
-
-            var display = string.Format("Size: {0:0.00} {1}", displayedSize, currentLabel);
-            _storageSizeMenuItem.Text = display;
         }
     }
 }

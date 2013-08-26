@@ -75,6 +75,7 @@
     <Compile Include="MetricRetriever\OpenProcessMetricRetriever.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServerStatus.cs" />
     <Compile Include="Storage\IStorageEngine.cs" />
     <Compile Include="Storage\Sqlite\DatabaseQueries.cs" />
     <Compile Include="Storage\Sqlite\DatabaseSchemaBuilder.cs" />
@@ -82,6 +83,7 @@
     <Compile Include="SystemTray.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Ui\SystemTrayMenuManager.cs" />
     <Compile Include="Web\OverlookBootStrapper.cs" />
     <Compile Include="Web\MetricsModule.cs" />
   </ItemGroup>
