@@ -76,10 +76,7 @@ namespace Overlook.Server
         private void ProcessMetricRequests()
         {
             var storageEngine = new SqliteStorageEngine(ApplicationSettings.DatabaseName);
-
-            var size = storageEngine.GetStoredSize();
-            var snapshotCount = storageEngine.GetSnapshotCount();
-            Invoke((Action)(() => _systemTrayMenuManager.UpdateStatus(ServerStatus.Running, size, snapshotCount)));
+            UpdateDisplays(storageEngine);
 
             // Start the webserver
             var bootstrapper = new OverlookBootStrapper(storageEngine);
@@ -107,11 +104,7 @@ namespace Overlook.Server
                     };
 
                     storageEngine.StoreSnapshot(snapshot);
-                    
-                    // Update displays
-                    size = storageEngine.GetStoredSize();
-                    snapshotCount = storageEngine.GetSnapshotCount();
-                    Invoke((Action)(() => _systemTrayMenuManager.UpdateStatus(ServerStatus.Running, size, snapshotCount)));
+                    UpdateDisplays(storageEngine);
 
                     lastSnapshotTime = DateTime.Now;
                 }
@@ -122,6 +115,13 @@ namespace Overlook.Server
             }
 
             webServer.Stop();
+        }
+
+        private void UpdateDisplays(SqliteStorageEngine storageEngine)
+        {
+            var size = storageEngine.GetStoredSize();
+            var snapshotCount = storageEngine.GetSnapshotCount();
+            Invoke((Action) (() => _systemTrayMenuManager.UpdateStatus(ServerStatus.Running, size, snapshotCount)));
         }
     }
 }

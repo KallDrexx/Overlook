@@ -5,6 +5,9 @@ using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using Overlook.Common.Data;
 using Overlook.Gui.Services;
+using OxyPlot;
+using OxyPlot.Axes;
+using OxyPlot.Series;
 
 namespace Overlook.Gui.ViewModels
 {
@@ -22,6 +25,7 @@ namespace Overlook.Gui.ViewModels
         private string _selectedMetricCategory;
         private string _selectedMetricName;
         private Metric _selectedQueryMetric;
+        private PlotModel _plotModel;
 
         public WorkAreaViewModel(QueryService queryService)
         {
@@ -50,6 +54,7 @@ namespace Overlook.Gui.ViewModels
         public RelayCommand AddMetricToQueryList { get; private set; }
         public RelayCommand RemoveMetricFromQueryList { get; private set; }
         public RelayCommand GetMetricsFromServerCommand { get; private set; }
+        public RelayCommand PlotMetricsCommand { get; private set; }
 
         public bool MetricsLoaded { get { return _allMetrics.Count > 0; } }
 
@@ -91,6 +96,12 @@ namespace Overlook.Gui.ViewModels
             set { Set(() => SelectedQueryMetric, ref _selectedQueryMetric, value); }
         }
 
+        public PlotModel PlotModel
+        {
+            get { return _plotModel; }
+            set { Set(() => PlotModel, ref _plotModel, value);}
+        }
+
         private void SetupDesignData()
         {
             _serverUrl = "http://some.url:4566/";
@@ -112,6 +123,8 @@ namespace Overlook.Gui.ViewModels
 
         private void InitializeCommands()
         {
+            PlotMetricsCommand = new RelayCommand(PlotSelectedMetrics);
+
             AddMetricToQueryList = new RelayCommand(() =>
             {
                 var metric = _allMetrics.Where(x => x.Device == _selectedMetricDevice)
@@ -182,6 +195,38 @@ namespace Overlook.Gui.ViewModels
 
             foreach (var name in names)
                 _metricNames.Add(name);
+        }
+
+        private void PlotSelectedMetrics()
+        {
+            var data = _queryService.QueryForMetrics(ServerUrl, QueryMetrics);
+
+            var model = new PlotModel("Metrics");
+            var dateAxis = new DateTimeAxis();
+            var lineAxis = new LinearAxis();
+            model.Axes.Add(dateAxis);
+            model.Axes.Add(lineAxis);
+
+            foreach (var queriedMetricResult in data)
+            {
+                var series = new LineSeries();
+                series.Color = OxyColor.FromArgb(255, 78, 154, 6);
+                series.MarkerFill = OxyColor.FromArgb(255, 78, 154, 6);
+                series.MarkerStroke = OxyColors.ForestGreen;
+                series.MarkerType = MarkerType.Plus;
+                series.StrokeThickness = 1;
+                series.DataFieldX = "Date";
+                series.DataFieldY = "Value";
+
+                foreach (var metricValuePair in queriedMetricResult.Values)
+                {
+                    series.Points.Add(new DataPoint(DateTimeAxis.ToDouble(metricValuePair.Key), (double)metricValuePair.Value));
+                }
+
+                model.Series.Add(series);
+            }
+
+            PlotModel = model;
         }
     }
 }
