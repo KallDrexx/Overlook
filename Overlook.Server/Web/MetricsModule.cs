@@ -28,12 +28,19 @@ namespace Overlook.Server.Web
                 if (!DateTime.TryParse(Request.Query.end, out end))
                     end = DateTime.MaxValue;
 
-                var metric = Metric.Create(Request.Query.metrics);
+                string rawMetrics = Convert.ToString(Request.Query.metric.Value);
+                var metrics = new Metric[0];
+                if (rawMetrics != null)
+                {
+                    var splitRawMetrics = rawMetrics.Split(',');
+                    metrics = splitRawMetrics.Select(Metric.Create).ToArray();
+                }
+
                 var query = new Query
                 {
                     StartDate = start,
                     EndDate = end,
-                    Metrics = new Metric[] {metric}
+                    Metrics = metrics
                 };
 
                 var results = _storageEngine.ExecuteQuery(query);

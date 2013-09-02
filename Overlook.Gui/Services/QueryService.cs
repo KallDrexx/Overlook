@@ -34,7 +34,7 @@ namespace Overlook.Gui.Services
             {
                 request.Parameters.Add(new Parameter
                 {
-                    Name = "metrics",
+                    Name = "metric",
                     Value = metric.ToParsableString(),
                     Type = ParameterType.GetOrPost
                 });

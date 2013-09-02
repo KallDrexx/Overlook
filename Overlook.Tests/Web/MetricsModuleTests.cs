@@ -64,7 +64,7 @@ namespace Overlook.Tests.Web
                 with.HttpRequest();
                 with.Query("start", startDate.ToString());
                 with.Query("end", endDate.ToString());
-                with.Query("metrics", metric.ToParsableString());
+                with.Query("metric", metric.ToParsableString());
             });
 
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, "Incorrect status code returned");
@@ -126,6 +126,27 @@ namespace Overlook.Tests.Web
 
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, "Incorrect status code returned");
             _storageEngine.Verify(x => x.ExecuteQuery(It.Is<Query>(y => y.StartDate == DateTime.MinValue)), Times.Once());
+        }
+
+        [TestMethod]
+        public void Query_Allows_Multiple_Metrics_Passed_In()
+        {
+            var metric1 = new Metric("device", "category", "name", "suffix");
+            var metric2 = new Metric("device2", "category2", "name2", "suffix2");
+
+            var path = "/metrics/query";
+            var response = _browser.Get(path, with =>
+            {
+                with.HttpRequest();
+                with.Query("metric", metric1.ToParsableString());
+                with.Query("metric", metric2.ToParsableString());
+            });
+
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, "Incorrect status code returned");
+            _storageEngine.Verify(x => x.ExecuteQuery(It.Is<Query>(y => y.Metrics != null)), Times.Once());
+            _storageEngine.Verify(x => x.ExecuteQuery(It.Is<Query>(y => y.Metrics.Length == 2)), Times.Once());
+            _storageEngine.Verify(x => x.ExecuteQuery(It.Is<Query>(y => y.Metrics.Contains(metric1))), Times.Once());
+            _storageEngine.Verify(x => x.ExecuteQuery(It.Is<Query>(y => y.Metrics.Contains(metric2))), Times.Once());
         }
     }
 }
