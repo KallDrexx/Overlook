@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using GalaSoft.MvvmLight;
@@ -265,23 +266,38 @@ namespace Overlook.Gui.ViewModels
             model.Axes.Add(dateAxis);
             model.Axes.Add(lineAxis);
 
-            var series = new LineSeries
-            {
-                MarkerFill = OxyColor.FromArgb(255, 78, 154, 6),
-                LineStyle = LineStyle.Solid,
-                DataFieldX = "Date",
-                DataFieldY = "Value"
-            };
-
             if (metricData != null)
             {
-                foreach (var metricValuePair in metricData.Values)
+                var series = new LineSeries
                 {
-                    series.Points.Add(new DataPoint(DateTimeAxis.ToDouble(metricValuePair.Key), (double)metricValuePair.Value));
-                }
+                    MarkerFill = OxyColor.FromArgb(255, 78, 154, 6),
+                    LineStyle = LineStyle.Solid,
+                    DataFieldX = "Date",
+                    DataFieldY = "Value"
+                };
+
+                // Restrict displayed data to daily averages
+                var intervalData = metricData.Values
+                                          .GroupBy(x =>
+                                          {
+                                              var timestamp = x.Key;
+                                              timestamp = timestamp.AddMinutes(-timestamp.Minute);
+                                              timestamp = timestamp.AddHours(-timestamp.Hour);
+                                              timestamp = timestamp.AddSeconds(-timestamp.Second);
+                                              timestamp = timestamp.AddMilliseconds(-timestamp.Millisecond);
+                                              return timestamp;
+                                          })
+                                          .Select(x => new KeyValuePair<DateTime, decimal>(x.Key, x.Average(y => y.Value)))
+                                          .ToArray();
+
+                foreach (var dataPair in intervalData)
+                {
+                    series.Points.Add(new DataPoint(DateTimeAxis.ToDouble(dataPair.Key), (double)dataPair.Value));  
+                } 
+
+                model.Series.Add(series);
             }
 
-            model.Series.Add(series);
             PlotModel = model;
         }
     }
