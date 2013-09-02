@@ -42,6 +42,9 @@ namespace Overlook.Server.Ui
                     _statusDisplayMenuItem.Text = "Running...";
                     _exitMenuItem.Enabled = true;
 
+                    if (numSnapshots == 0)
+                        numSnapshots = 1; // prevent divide by zero errors
+
                     var averagePerSnapshot = storageSize/numSnapshots;
                     var sizeDisplay = string.Format("Size: {0} (avg {1} per snapshot)",
                                                     GetFriendlySizeString(storageSize),
