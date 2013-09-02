@@ -4,9 +4,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using NLog;
 using Nancy.Hosting.Self;
 using Overlook.Common.Data;
 using Overlook.Server.MetricRetriever;
+using Overlook.Server.Storage;
 using Overlook.Server.Storage.Sqlite;
 using Overlook.Server.Ui;
 using Overlook.Server.Web;
@@ -20,6 +22,8 @@ namespace Overlook.Server
         private readonly Task _processingTask;
         private readonly SystemTrayMenuManager _systemTrayMenuManager;
         private readonly int _webPortNumber;
+
+        private static Logger _logger = LogManager.GetCurrentClassLogger();
 
         public SystemTray()
         {
@@ -59,6 +63,7 @@ namespace Overlook.Server
             const int maxSecondsToWaitForCancellation = 60;
             var cancellationTime = DateTime.Now;
 
+            _logger.Debug("Cancellation requested");
             _cancellationTokenSource.Cancel();
 
             while (!_processingTask.IsCanceled && !_processingTask.IsCompleted && !_processingTask.IsFaulted)
@@ -69,20 +74,24 @@ namespace Overlook.Server
                 await Task.Delay(100);
             }
 
+            _logger.Debug("Task cancelled or waiting period expired");
             _trayIcon.Dispose();
             Application.Exit();
         }
 
         private void ProcessMetricRequests()
         {
+            _logger.Debug("Beginning to process metric requests");
+
             var storageEngine = new SqliteStorageEngine(ApplicationSettings.DatabaseName);
-            UpdateDisplays(storageEngine);
 
             // Start the webserver
+            _logger.Debug("Beginning webserver on port {0}", _webPortNumber);
             var bootstrapper = new OverlookBootStrapper(storageEngine);
             var uri = new Uri("http://localhost:" + _webPortNumber);
             var webServer = new NancyHost(uri, bootstrapper);
             webServer.Start();
+            _logger.Debug("Web server started");
 
             var retrievers = new IMetricRetriever[]
             {
@@ -90,12 +99,16 @@ namespace Overlook.Server
                 new OpenHardwareMonitorMetricRetriever()
             };
 
+            UpdateDisplays(storageEngine);
+
             var lastSnapshotTime = DateTime.MinValue;
             var secondsBetweenChecks = ApplicationSettings.SecondsBetweenSnapshots;
             while (!_cancellationTokenSource.Token.IsCancellationRequested)
             {
                 if ((DateTime.Now - lastSnapshotTime).TotalSeconds > secondsBetweenChecks)
                 {
+                    _logger.Debug("Generating snapshot");
+
                     var snapshot = new Snapshot
                     {
                         Date = DateTime.Now,
@@ -103,9 +116,11 @@ namespace Overlook.Server
                                                  .ToArray()
                     };
 
+                    _logger.Debug("Storing Snapshot");
                     storageEngine.StoreSnapshot(snapshot);
-                    UpdateDisplays(storageEngine);
+                    _logger.Debug("Snapshot stored");
 
+                    UpdateDisplays(storageEngine);
                     lastSnapshotTime = DateTime.Now;
                 }
                 else
@@ -114,14 +129,26 @@ namespace Overlook.Server
                 }
             }
 
+            _logger.Debug("Stopping webserver");
             webServer.Stop();
+            _logger.Debug("Webserver stopped");
         }
 
-        private void UpdateDisplays(SqliteStorageEngine storageEngine)
+        private void UpdateDisplays(IStorageEngine storageEngine)
         {
+            _logger.Debug("Updating storage engine displays");
+
             var size = storageEngine.GetStoredSize();
             var snapshotCount = storageEngine.GetSnapshotCount();
-            Invoke((Action) (() => _systemTrayMenuManager.UpdateStatus(ServerStatus.Running, size, snapshotCount)));
+
+            Invoke((Action) (() =>
+            {
+                _logger.Debug("Updating Status");
+                _systemTrayMenuManager.UpdateStatus(ServerStatus.Running, size, snapshotCount);
+                _logger.Debug("Status updated");
+            }));
+
+            _logger.Debug("Storage engine displays updated");
         }
     }
 }
