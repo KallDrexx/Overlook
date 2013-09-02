@@ -100,7 +100,25 @@
         </Grid>
         
         <Grid Grid.Column="2">
-            <oxy:Plot Model="{Binding PlotModel}" Grid.Column="0" />
+            <Grid.RowDefinitions>
+                <RowDefinition Height="25"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="95"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Text="Displayed Metric:" Grid.Column="0" />
+                <ComboBox ItemsSource="{Binding DisplayableMetrics}"
+                          IsEnabled="{Binding MetricsDisplayable}"
+                          SelectedItem="{Binding DisplayedMetric, Mode=TwoWay}"
+                          Grid.Column="1" />
+            </Grid>
+            
+            <oxy:Plot Model="{Binding PlotModel}" Grid.Row="1" />
         </Grid>
     </Grid>
 </Window>

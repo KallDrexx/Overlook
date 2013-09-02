@@ -13,20 +13,6 @@ namespace Overlook.Gui.ViewModels
 {
     public class WorkAreaViewModel : ViewModelBase
     {
-        private readonly List<Metric> _allMetrics; 
-        private readonly ObservableCollection<string> _metricDevices;
-        private readonly ObservableCollection<string> _metricCategories;
-        private readonly ObservableCollection<string> _metricNames;
-        private readonly ObservableCollection<Metric> _queryMetrics;
-        private readonly QueryService _queryService;
- 
-        private string _serverUrl;
-        private string _selectedMetricDevice;
-        private string _selectedMetricCategory;
-        private string _selectedMetricName;
-        private Metric _selectedQueryMetric;
-        private PlotModel _plotModel;
-
         public WorkAreaViewModel(QueryService queryService)
         {
             _queryService = queryService;
@@ -35,6 +21,7 @@ namespace Overlook.Gui.ViewModels
             _metricCategories = new ObservableCollection<string>();
             _metricNames = new ObservableCollection<string>();
             _queryMetrics = new ObservableCollection<Metric>();
+            _displayableMetrics = new ObservableCollection<Metric>();
 
             if (IsInDesignMode)
             {
@@ -46,17 +33,65 @@ namespace Overlook.Gui.ViewModels
             }
         }
 
-        public IEnumerable<string> MetricDevices { get { return _metricDevices; } }
-        public IEnumerable<string> MetricCategories { get { return _metricCategories; } }
-        public IEnumerable<string> MetricNames { get { return _metricNames; } }
-        public IEnumerable<Metric> QueryMetrics { get { return _queryMetrics; } }
+        private IEnumerable<QueriedMetricResult> _metricData; 
+
+        #region Bindable Support
+
+        private readonly List<Metric> _allMetrics;
+        private readonly ObservableCollection<string> _metricDevices;
+        private readonly ObservableCollection<string> _metricCategories;
+        private readonly ObservableCollection<string> _metricNames;
+        private readonly ObservableCollection<Metric> _queryMetrics;
+        private readonly ObservableCollection<Metric> _displayableMetrics;
+        private readonly QueryService _queryService;
+
+        private string _serverUrl;
+        private string _selectedMetricDevice;
+        private string _selectedMetricCategory;
+        private string _selectedMetricName;
+        private Metric _selectedQueryMetric;
+        private PlotModel _plotModel;
+        private Metric _displayedMetric;
+
+        public IEnumerable<string> MetricDevices
+        {
+            get { return _metricDevices; }
+        }
+
+        public IEnumerable<string> MetricCategories
+        {
+            get { return _metricCategories; }
+        }
+
+        public IEnumerable<string> MetricNames
+        {
+            get { return _metricNames; }
+        }
+
+        public IEnumerable<Metric> QueryMetrics
+        {
+            get { return _queryMetrics; }
+        }
+
+        public IEnumerable<Metric> DisplayableMetrics
+        {
+            get { return _displayableMetrics; }
+        }
 
         public RelayCommand AddMetricToQueryList { get; private set; }
         public RelayCommand RemoveMetricFromQueryList { get; private set; }
         public RelayCommand GetMetricsFromServerCommand { get; private set; }
         public RelayCommand PlotMetricsCommand { get; private set; }
 
-        public bool MetricsLoaded { get { return _allMetrics.Count > 0; } }
+        public bool MetricsLoaded
+        {
+            get { return _allMetrics.Count > 0; }
+        }
+
+        public bool MetricsDisplayable
+        {
+            get { return _displayableMetrics.Count > 0; }
+        }
 
         public string ServerUrl
         {
@@ -99,8 +134,22 @@ namespace Overlook.Gui.ViewModels
         public PlotModel PlotModel
         {
             get { return _plotModel; }
-            set { Set(() => PlotModel, ref _plotModel, value);}
+            set { Set(() => PlotModel, ref _plotModel, value); }
         }
+
+        public Metric DisplayedMetric
+        {
+            get { return _displayedMetric; }
+            set
+            {
+                Set(() => DisplayedMetric, ref _displayedMetric, value);
+
+                var data = _metricData.FirstOrDefault(x => x.Metric.Equals(value));
+                PlotMetricData(data);
+            }
+        }
+
+        #endregion
 
         private void SetupDesignData()
         {
@@ -123,7 +172,7 @@ namespace Overlook.Gui.ViewModels
 
         private void InitializeCommands()
         {
-            PlotMetricsCommand = new RelayCommand(PlotSelectedMetrics);
+            PlotMetricsCommand = new RelayCommand(GetMetricData);
 
             AddMetricToQueryList = new RelayCommand(() =>
             {
@@ -197,35 +246,42 @@ namespace Overlook.Gui.ViewModels
                 _metricNames.Add(name);
         }
 
-        private void PlotSelectedMetrics()
+        private void GetMetricData()
         {
-            var data = _queryService.QueryForMetrics(ServerUrl, QueryMetrics);
+            _metricData = _queryService.QueryForMetrics(ServerUrl, QueryMetrics);
 
+            _displayableMetrics.Clear();
+            foreach (var queriedMetricResult in _metricData)
+                _displayableMetrics.Add(queriedMetricResult.Metric);
+
+            RaisePropertyChanged(() => MetricsDisplayable);
+        }
+
+        private void PlotMetricData(QueriedMetricResult metricData)
+        {
             var model = new PlotModel("Metrics");
             var dateAxis = new DateTimeAxis();
             var lineAxis = new LinearAxis();
             model.Axes.Add(dateAxis);
             model.Axes.Add(lineAxis);
 
-            foreach (var queriedMetricResult in data)
+            var series = new LineSeries
             {
-                var series = new LineSeries();
-                series.Color = OxyColor.FromArgb(255, 78, 154, 6);
-                series.MarkerFill = OxyColor.FromArgb(255, 78, 154, 6);
-                series.MarkerStroke = OxyColors.ForestGreen;
-                series.MarkerType = MarkerType.Plus;
-                series.StrokeThickness = 1;
-                series.DataFieldX = "Date";
-                series.DataFieldY = "Value";
+                MarkerFill = OxyColor.FromArgb(255, 78, 154, 6),
+                LineStyle = LineStyle.Solid,
+                DataFieldX = "Date",
+                DataFieldY = "Value"
+            };
 
-                foreach (var metricValuePair in queriedMetricResult.Values)
+            if (metricData != null)
+            {
+                foreach (var metricValuePair in metricData.Values)
                 {
                     series.Points.Add(new DataPoint(DateTimeAxis.ToDouble(metricValuePair.Key), (double)metricValuePair.Value));
                 }
-
-                model.Series.Add(series);
             }
 
+            model.Series.Add(series);
             PlotModel = model;
         }
     }
