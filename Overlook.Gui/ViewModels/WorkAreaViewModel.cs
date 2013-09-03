@@ -145,8 +145,15 @@ namespace Overlook.Gui.ViewModels
             {
                 Set(() => DisplayedMetric, ref _displayedMetric, value);
 
-                var data = _metricData.FirstOrDefault(x => x.Metric.Equals(value));
-                PlotMetricData(data);
+                if (value != null)
+                {
+                    var data = _metricData.FirstOrDefault(x => x.Metric.Equals(value));
+                    PlotMetricData(data);
+                }
+                else
+                {
+                    PlotMetricData(null);
+                }
             }
         }
 
@@ -250,8 +257,31 @@ namespace Overlook.Gui.ViewModels
         private void GetMetricData()
         {
             _metricData = _queryService.QueryForMetrics(ServerUrl, QueryMetrics);
-
             _displayableMetrics.Clear();
+            RaisePropertyChanged(() => MetricsDisplayable);
+
+            if (_metricData == null)
+                return;
+            
+            // Discard any data where data for all metrics are not available for
+            var allDates = _metricData.SelectMany(x => x.Values)
+                                      .Select(x => x.Key)
+                                      .Distinct()
+                                      .ToArray();
+
+            foreach (var dateTime in allDates)
+            {
+                if (_metricData.All(x => x.Values.Any(y => y.Key == dateTime)))
+                    continue;
+
+                foreach (var queriedMetricResult in _metricData)
+                {
+                    queriedMetricResult.Values = queriedMetricResult.Values
+                                                                    .Where(x => x.Key != dateTime)
+                                                                    .ToArray();
+                }
+            }
+
             foreach (var queriedMetricResult in _metricData)
                 _displayableMetrics.Add(queriedMetricResult.Metric);
 
@@ -270,7 +300,10 @@ namespace Overlook.Gui.ViewModels
             {
                 var series = new LineSeries
                 {
-                    MarkerFill = OxyColor.FromArgb(255, 78, 154, 6),
+                    MarkerFill = OxyColors.SkyBlue,
+                    MarkerSize = 5,
+                    MarkerStroke = OxyColors.White,
+                    MarkerType = MarkerType.Circle,
                     LineStyle = LineStyle.Solid,
                     DataFieldX = "Date",
                     DataFieldY = "Value"
