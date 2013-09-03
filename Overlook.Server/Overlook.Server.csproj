@@ -40,6 +40,9 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Win32.TaskScheduler">
+      <HintPath>..\packages\TaskScheduler.1.9.4\lib\2\Microsoft.Win32.TaskScheduler.dll</HintPath>
+    </Reference>
     <Reference Include="Nancy">
       <HintPath>..\packages\Nancy.0.18.0\lib\net40\Nancy.dll</HintPath>
     </Reference>
@@ -86,6 +89,7 @@
     <Compile Include="SystemTray.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Ui\ServerStartupManager.cs" />
     <Compile Include="Ui\SystemTrayMenuManager.cs" />
     <Compile Include="Web\OverlookBootStrapper.cs" />
     <Compile Include="Web\MetricsModule.cs" />

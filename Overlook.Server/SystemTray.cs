@@ -12,6 +12,7 @@ using Overlook.Server.Storage;
 using Overlook.Server.Storage.Sqlite;
 using Overlook.Server.Ui;
 using Overlook.Server.Web;
+using Timer = System.Windows.Forms.Timer;
 
 namespace Overlook.Server
 {
@@ -23,7 +24,7 @@ namespace Overlook.Server
         private readonly SystemTrayMenuManager _systemTrayMenuManager;
         private readonly int _webPortNumber;
 
-        private static Logger _logger = LogManager.GetCurrentClassLogger();
+        private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
         public SystemTray()
         {
@@ -48,6 +49,9 @@ namespace Overlook.Server
             ShowInTaskbar = false;
 
             _processingTask.Start();
+
+            var errorTicker = new Timer { Interval = 1000 };
+            errorTicker.Tick += ErrorTickerOnTick;
         }
 
         protected override void Dispose(bool disposing)
@@ -56,6 +60,20 @@ namespace Overlook.Server
                 _trayIcon.Dispose();
             
             base.Dispose(disposing);
+        }
+
+        private void ErrorTickerOnTick(object sender, EventArgs eventArgs)
+        {
+            if (_processingTask.Exception != null)
+            {
+                _logger.Fatal("{0} exception occurred in metric processing task", _processingTask.Exception.InnerException.GetType());
+
+                var message = string.Format("An {0} exception occurred in the metric processing task",
+                                            _processingTask.Exception.InnerException.GetType());
+                MessageBox.Show(message, "Overlook Server Error Occurred");
+
+                OnExit(null, null);
+            }
         }
 
         private async void OnExit(object sender, EventArgs e)

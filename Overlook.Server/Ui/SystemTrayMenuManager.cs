@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
+using Microsoft.Win32;
+using Microsoft.Win32.TaskScheduler;
 
 namespace Overlook.Server.Ui
 {
@@ -9,6 +11,7 @@ namespace Overlook.Server.Ui
         private readonly MenuItem _statusDisplayMenuItem;
         private readonly MenuItem _sizeDisplayMenuItem;
         private readonly MenuItem _exitMenuItem;
+        private readonly MenuItem _setAsStartupMenuItem;
 
         public SystemTrayMenuManager(NotifyIcon systemTrayIcon, int webPort)
         {
@@ -20,11 +23,19 @@ namespace Overlook.Server.Ui
             _exitMenuItem = new MenuItem {Text = "Exit"};
             _exitMenuItem.Click += ProcessExitRequest;
 
+            _setAsStartupMenuItem = new MenuItem
+            {
+                Text = "Start On Windows Startup",
+                Checked = ServerStartupManager.WillLaunchOnStartup()
+            };
+            _setAsStartupMenuItem.Click += ToggleStartupStatus;
+
             _contextMenu = new ContextMenu(new[]
             {
                 _statusDisplayMenuItem,
                 _sizeDisplayMenuItem,
                 new MenuItem {Text = "Port: " + webPort, Enabled = false}, 
+                _setAsStartupMenuItem,
                 new MenuItem("-"), 
                 _exitMenuItem
             });
@@ -89,6 +100,17 @@ namespace Overlook.Server.Ui
             }
 
             return string.Format("{0:0.00} {1}", displayedSize, currentLabel);
+        }
+
+        private void ToggleStartupStatus(object sender, EventArgs e)
+        {
+            if (ServerStartupManager.WillLaunchOnStartup())
+                ServerStartupManager.DisableLaunchOnStartup();
+
+            else
+                ServerStartupManager.EnableLaunchOnStartup();
+
+            _setAsStartupMenuItem.Checked = !_setAsStartupMenuItem.Checked;
         }
     }
 }
